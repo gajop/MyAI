@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package nulloojavaai.military.toplevel;
+package nulloojavaai.militarymanager.toplevel;
 
 import java.util.List;
 

@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package nulloojavaai.military;
+package nulloojavaai.militarymanager;
 
 import com.springrts.ai.oo.Unit;
 import java.util.List;

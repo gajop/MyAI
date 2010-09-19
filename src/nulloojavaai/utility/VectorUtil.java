@@ -6,6 +6,8 @@
 package nulloojavaai.utility;
 
 import com.springrts.ai.AIFloat3;
+import com.springrts.ai.oo.Unit;
+
 import java.util.Collection;
 import javax.vecmath.Vector3f;
 
@@ -20,13 +22,23 @@ public abstract class VectorUtil {
         double dz = first.z - second.z;
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
-    public static AIFloat3 average(Collection<AIFloat3> collectable) {
+    public static AIFloat3 average(Collection<AIFloat3> collection) {
         Vector3f center = new Vector3f(0, 0, 0);
-        if (!collectable.isEmpty()) {
-            for (AIFloat3 point : collectable) {
+        if (!collection.isEmpty()) {
+            for (AIFloat3 point : collection) {
                 center.add(point.toVector3f());
             }
-            center.scale(1.0f / collectable.size());
+            center.scale(1.0f / collection.size());
+        }
+        return new AIFloat3(center);
+    }
+    public static AIFloat3 averageFromUnits(Collection<Unit> collection) {
+        Vector3f center = new Vector3f(0, 0, 0);
+        if (!collection.isEmpty()) {
+            for (Unit point : collection) {
+                center.add(point.getPos().toVector3f());
+            }
+            center.scale(1.0f / collection.size());
         }
         return new AIFloat3(center);
     }

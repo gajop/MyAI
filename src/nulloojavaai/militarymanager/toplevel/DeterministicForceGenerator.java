@@ -3,14 +3,14 @@
  * and open the template in the editor.
  */
 
-package nulloojavaai.military.toplevel;
+package nulloojavaai.militarymanager.toplevel;
 
 import com.springrts.ai.oo.Unit;
 import java.util.LinkedList;
 import java.util.List;
 
-import nulloojavaai.military.BattleGroup;
-import nulloojavaai.military.Military;
+import nulloojavaai.militarymanager.BattleGroup;
+import nulloojavaai.militarymanager.MilitaryManager;
 import nulloojavaai.utility.SpringCommunications;
 
 /**
@@ -21,14 +21,14 @@ public class DeterministicForceGenerator extends ForceGenerator {
     SpringCommunications spring;
     
     public DeterministicForceGenerator(SpringCommunications spring,
-            Military military, ForceFactory forceFactory) {
+            MilitaryManager military, ForceFactory forceFactory) {
         super(military, forceFactory);
         this.spring = spring;
     }
 
     public List<Force> generateForces() {
         List<Force> forces = new LinkedList<Force>();
-        for (BattleGroup battleGroup : this.military.getBattleGroups()) {
+        for (BattleGroup battleGroup : this.militaryManager.getBattleGroups()) {
             forces.add(forceFactory.generate(battleGroup));
         }
         List<Unit> enemyUnits = spring.getClb().getEnemyUnits();

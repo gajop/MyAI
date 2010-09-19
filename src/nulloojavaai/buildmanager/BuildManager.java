@@ -7,8 +7,7 @@ package nulloojavaai.buildmanager;
 
 import com.springrts.ai.AICommand;
 import com.springrts.ai.AIFloat3;
-import com.springrts.ai.command.GuardUnitAICommand;
-import com.springrts.ai.command.MoveUnitAICommand;
+import com.springrts.ai.command.*;
 import com.springrts.ai.oo.OOAICallback;
 import com.springrts.ai.oo.Resource;
 import com.springrts.ai.oo.Unit;
@@ -17,29 +16,41 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
+
 import nulloojavaai.Module;
+import nulloojavaai.unitmanager.UnitManager;
+import nulloojavaai.unitmanager.UnitManagerListener;
 import nulloojavaai.buildmanager.buildscheduler.BuildScheduler;
 import nulloojavaai.utility.SpringCommunications;
+import nulloojavaai.utility.VectorUtil;
 
 /**
  *
  * @author gajop
  */
-public class BuildManager extends Module {
+public class BuildManager extends Module implements UnitManagerListener {
     private Unit commander = null;
     private LinkedList<UnitDef>  initialBuildOrder = new LinkedList<UnitDef>();
     private LinkedList<UnitDef>  repeatingBuildOrder = new LinkedList<UnitDef>();
     int repeatingBOPos = 0;
     private UnitDef solarPlant = null, mex = null, vehPlantType = null, 
-            flash = null, vehcon = null;
+            flash = null, vehcon = null, nano = null;
     boolean busy = false;
     private LinkedList<AIFloat3> takenResources = new LinkedList<AIFloat3>();
     private Unit vehPlant = null;
     BuildScheduler buildScheduler;
     SpringCommunications spring;
+    Logger log;
+    UnitManager unitManager;
+
+    public void setUnitManager(UnitManager unitManager) {
+        this.unitManager = unitManager;
+    }
 
     public BuildManager(SpringCommunications spring) {
         this.spring = spring;
+        log = spring.getLogger("build-manager");
     }
 
     @Override
@@ -57,6 +68,8 @@ public class BuildManager extends Module {
                 flash = unitDef;
             } else if (unitDef.getName().equals("armcv")) {
                 vehcon = unitDef;
+            } else if (unitDef.getName().equals("armnanotc")) {
+                nano = unitDef;
             }
         }
         initialBuildOrder.addAll(Arrays.asList(mex, mex, mex, solarPlant,
@@ -109,7 +122,7 @@ public class BuildManager extends Module {
             if (!initialBuildOrder.isEmpty()) {
                 UnitDef currentUnitDef = initialBuildOrder.getFirst();
                 if (buildScheduler.canBuild(currentUnitDef, this.commander)) {
-                    AIFloat3 position = null;
+                    AIFloat3 position;
                     if (!currentUnitDef.equals(mex)) {
                         position = spring.getClb().getMap().findClosestBuildSite(currentUnitDef,
                                 this.commander.getPos(), 300, 5, 0);
@@ -127,12 +140,15 @@ public class BuildManager extends Module {
                 double eCurrent = 0;
                 double eMax = 0;
                 double mCurrent = 0;
+                double mMax = 0;
                 for (Resource resource : spring.getClb().getResources()) {
                     if (resource.getName().equals("Metal")) {
                         resourcePositions = spring.getClb().
                                 getMap().getResourceMapSpotsPositions(resource);
                         mCurrent = spring.getClb().getEconomy().
                                 getCurrent(resource);
+                        mMax = spring.getClb().getEconomy().
+                                getStorage(resource);
                     } else if (resource.getName().equals("Energy")) {
                         eCurrent = spring.getClb().getEconomy().
                                 getCurrent(resource);
@@ -142,10 +158,21 @@ public class BuildManager extends Module {
                     
                 }
                 for (Unit builder : buildScheduler.getIdleBuilders()) {
-                    if (builder.equals(this.commander)) {
+                    if (!builder.getDef().equals(this.vehcon)) {
+                        continue;
+                    } else if (VectorUtil.distance(builder.getPos(), vehPlant.getPos()) < 60) {
                         continue;
                     }
-                    if (eCurrent > eMax / 5) { //20%
+                    if (eCurrent < eMax / 4) { //25% total energy, need more
+                        if (buildScheduler.canBuild(solarPlant, builder)) {
+                            AIFloat3 position = spring.getClb().
+                                    getMap().findClosestBuildSite(solarPlant,
+                                    builder.getPos(), 300, 5, 0);
+                            if (buildScheduler.canBuild(solarPlant, builder, position)) {
+                                buildScheduler.build(solarPlant, builder, position);
+                            }
+                        }
+                    } else if (mCurrent < mMax / 3) {  //33% total metal, need more
                         if (resourcePositions.isEmpty()) {
                             break;
                         }
@@ -157,16 +184,20 @@ public class BuildManager extends Module {
                                 takenResources.add(bestPos);
                             }
                         }
-                    } else {
-                        if (buildScheduler.canBuild(solarPlant, builder)) {
+                    } else if (mCurrent > mMax / 2) {
+                        if (buildScheduler.canBuild(nano, builder)) {
                             AIFloat3 position = spring.getClb().
-                                    getMap().findClosestBuildSite(solarPlant,
-                                    builder.getPos(), 300, 5, 0);
-                            if (buildScheduler.canBuild(solarPlant, builder, position)) {
-                                buildScheduler.build(solarPlant, builder, position);
+                                    getMap().findClosestBuildSite(nano,
+                                    vehPlant.getPos(), 300, 8, 0);
+                            if (buildScheduler.canBuild(nano, builder, position)) {
+                                buildScheduler.build(nano, builder, position);
                             }
                         }
-                    }
+                    } /*else {
+                        if (this.vehPlant != null) {
+                            buildScheduler.assist(builder, vehPlant);
+                        }
+                    }  */
                 }
                 UnitDef currentUnitDef = repeatingBuildOrder.get(repeatingBOPos);
                 if (vehPlant != null && buildScheduler.
@@ -187,12 +218,25 @@ public class BuildManager extends Module {
         if (unit.getDef().getName().equals("armcom")) {
             this.commander = unit;
         } else if (unit.getDef().equals(this.vehPlantType)) {
-            this.vehPlant = unit;
-            AIFloat3 destination = new AIFloat3(this.vehPlant.getPos());
-            destination.y -= 500;
-            MoveUnitAICommand command = new MoveUnitAICommand(this.vehPlant, -1,
-                    new ArrayList<AICommand.Option>(), 10000, destination);
+            this.vehPlant = unit;            
+        } else if (unit.getDef().equals(nano)) {
+            AIFloat3 patrolPos = new AIFloat3(unit.getPos());
+            patrolPos.x -= 50;
+            AICommand command = new PatrolUnitAICommand(unit,
+                    -1, new ArrayList<AICommand.Option>(),
+                    10000, patrolPos);
             spring.handleEngineCommand(command);
+            log.info("sending unit to patrol");
+            command = new SetRepeatUnitAICommand(unit,
+                    -1, new ArrayList<AICommand.Option>(),
+                    10000, true);
+            spring.handleEngineCommand(command);
+            log.info("sending unit to repeat");
+            command = new SetFireStateUnitAICommand(unit,
+                    -1, new ArrayList<AICommand.Option>(),
+                    10000, 3);
+            spring.handleEngineCommand(command);
+            log.info("sending unit to repeat");
         }
         buildScheduler.unitFinished(unit);
         return 0; 
@@ -229,5 +273,12 @@ public class BuildManager extends Module {
     public String getModuleName() {
         return "BuildManager";
     }
-    
+
+    public void onUnitOwnershipGained(Unit unit) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public void onUnitOwnershipLost(Unit unit) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
 }

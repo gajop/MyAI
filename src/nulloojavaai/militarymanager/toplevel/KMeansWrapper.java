@@ -3,12 +3,12 @@
  * and open the template in the editor.
  */
 
-package nulloojavaai.military.toplevel;
+package nulloojavaai.militarymanager.toplevel;
 
 import com.springrts.ai.oo.Unit;
 import java.util.LinkedList;
 import java.util.List;
-import javax.vecmath.Vector3f;
+
 import nulloojavaai.utility.VectorUtil;
 
 /**

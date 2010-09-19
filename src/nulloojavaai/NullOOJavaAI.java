@@ -21,12 +21,14 @@ import com.springrts.ai.AIFloat3;
 import com.springrts.ai.oo.*;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import nulloojavaai.buildmanager.BuildManager;
-import nulloojavaai.military.Military;
+import nulloojavaai.militarymanager.MilitaryManager;
+import nulloojavaai.unitmanager.PrioritizedUnitManager;
+import nulloojavaai.unitmanager.UnitManagerListener;
 import nulloojavaai.utility.SpringCommunications;
 
 /**
@@ -50,9 +52,16 @@ public class NullOOJavaAI extends AbstractOOAI implements OOAI {
         spring = new SpringCommunications(callback);
         log = spring.getLogger("general");
         this.teamId = teamId;
-        Military military = new Military(spring);
+        MilitaryManager militaryManager = new MilitaryManager(spring);
         BuildManager buildManager = new BuildManager(spring);
-        modules.addAll(Arrays.asList(military, buildManager));        
+        HashMap<UnitManagerListener, Integer> unitPriorityMapping = 
+                new HashMap<UnitManagerListener, Integer>();
+        unitPriorityMapping.put(militaryManager, 3);
+        unitPriorityMapping.put(buildManager, 2);
+        PrioritizedUnitManager unitManager = new PrioritizedUnitManager(spring, unitPriorityMapping);
+        buildManager.setUnitManager(unitManager);
+        militaryManager.setUnitManager(unitManager);
+        modules.addAll(Arrays.asList(militaryManager, buildManager, unitManager));
     }
 
     @Override

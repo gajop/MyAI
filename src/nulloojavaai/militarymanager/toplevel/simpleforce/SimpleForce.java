@@ -3,11 +3,11 @@
  * and open the template in the editor.
  */
 
-package nulloojavaai.military.toplevel.simpleforce;
+package nulloojavaai.militarymanager.toplevel.simpleforce;
 
 import com.springrts.ai.AIFloat3;
-import nulloojavaai.military.BattleGroup;
-import nulloojavaai.military.toplevel.Force;
+import nulloojavaai.militarymanager.BattleGroup;
+import nulloojavaai.militarymanager.toplevel.Force;
 import nulloojavaai.utility.SpringCommunications;
 
 /**

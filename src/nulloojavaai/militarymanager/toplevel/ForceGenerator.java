@@ -3,36 +3,36 @@
  * and open the template in the editor.
  */
 
-package nulloojavaai.military.toplevel;
+package nulloojavaai.militarymanager.toplevel;
 
-import nulloojavaai.military.Military;
+import nulloojavaai.militarymanager.MilitaryManager;
 
 /**
  *
  * @author gajop
  */
 public abstract class ForceGenerator {
-    Military military;
+    MilitaryManager militaryManager;
     ForceFactory forceFactory;
 
     public void setForceFactory(ForceFactory forceFactory) {
         this.forceFactory = forceFactory;
     }
 
-    public void setMilitary(Military military) {
-        this.military = military;
+    public void setMlitaryManager(MilitaryManager mIlitaryManager) {
+        this.militaryManager = mIlitaryManager;
     }
 
     public ForceFactory getForceFactory() {
         return forceFactory;
     }
 
-    public Military getMilitary() {
-        return military;
+    public MilitaryManager getMilitaryManager() {
+        return militaryManager;
     }
 
-    public ForceGenerator(Military military, ForceFactory forceFactory) {
-        this.military = military;
+    public ForceGenerator(MilitaryManager military, ForceFactory forceFactory) {
+        this.militaryManager = military;
         this.forceFactory = forceFactory;
     }
 
@@ -45,7 +45,7 @@ public abstract class ForceGenerator {
             return false;
         }
         final ForceGenerator other = (ForceGenerator) obj;
-        if (this.military != other.military && (this.military == null || !this.military.equals(other.military))) {
+        if (this.militaryManager != other.militaryManager && (this.militaryManager == null || !this.militaryManager.equals(other.militaryManager))) {
             return false;
         }
         if (this.forceFactory != other.forceFactory && (this.forceFactory == null || !this.forceFactory.equals(other.forceFactory))) {
@@ -57,7 +57,7 @@ public abstract class ForceGenerator {
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 79 * hash + (this.military != null ? this.military.hashCode() : 0);
+        hash = 79 * hash + (this.militaryManager != null ? this.militaryManager.hashCode() : 0);
         hash = 79 * hash + (this.forceFactory != null ? this.forceFactory.hashCode() : 0);
         return hash;
     }
