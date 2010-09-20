@@ -41,6 +41,9 @@ public class PrioritizedUnitManager extends Module implements UnitManager {
             ownership.put(unit, listener);
             return true;
         } else {
+            if (ownership.get(unit).equals(listener)) {
+                return true;
+            }
             SortedSet<UnitManagerListener> unitRequests = requests.get(unit);
             if (unitRequests.contains(listener)) {
                 return false;

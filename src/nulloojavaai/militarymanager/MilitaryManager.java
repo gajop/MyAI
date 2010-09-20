@@ -12,7 +12,10 @@ import com.springrts.ai.oo.Unit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
+
 import nulloojavaai.Module;
+import nulloojavaai.militarymanager.toplevel.simpleforce.SimpleForce;
 import nulloojavaai.unitmanager.UnitManager;
 import nulloojavaai.unitmanager.UnitManagerListener;
 import nulloojavaai.militarymanager.toplevel.DeterministicForceGenerator;
@@ -40,14 +43,22 @@ public class MilitaryManager extends Module implements UnitManagerListener {
 
     @Override
     public int update(int frame) {
-        if (frame % 20 == 0) {
+        if (frame % 50 == 0) {
+            DeterministicForceGenerator forceGen = new
+                    DeterministicForceGenerator(spring, this,
+                    new SimpleForceFactory(spring));
+            List<Force> forces = forceGen.generateForces();
             for (BattleGroup battleGroup : battleGroups) {
                 if (!battleGroup.units.isEmpty()) {
                     AIFloat3 center = VectorUtil.averageFromUnits(battleGroup.units);
                     AIFloat3 closest = null;
                     double closestDistance = Double.MAX_VALUE;
-                    for (Unit enemyUnit :  spring.getClb().getEnemyUnits()) {
-                        AIFloat3 position = enemyUnit.getPos();
+                    for (Force force : forces) {
+                        SimpleForce simpleForce = (SimpleForce) force;
+                        if (simpleForce.getOwner() == spring.getClb().getTeamId()) {
+                            continue;
+                        }
+                        AIFloat3 position = simpleForce.getOriginalPosition();
                         double distance = VectorUtil.distance(position, center);
                         if (distance < closestDistance) {
                             closest = position;
@@ -67,15 +78,6 @@ public class MilitaryManager extends Module implements UnitManagerListener {
                         }
                     }
                 }
-            }
-        }
-        if (false && frame % 50 == 0) {
-            DeterministicForceGenerator forceGen = new
-                    DeterministicForceGenerator(spring, this,
-                    new SimpleForceFactory(spring));
-            spring.sendTextMsg(String.valueOf(frame));
-            for (Force force : forceGen.generateForces()) {
-                spring.sendTextMsg(force.toString());
             }
         }
         return 0;

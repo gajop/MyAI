@@ -25,9 +25,12 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
+
 import nulloojavaai.buildmanager.BuildManager;
+import nulloojavaai.economymanager.EconomyManager;
 import nulloojavaai.militarymanager.MilitaryManager;
 import nulloojavaai.unitmanager.PrioritizedUnitManager;
+import nulloojavaai.unitmanager.UnitManager;
 import nulloojavaai.unitmanager.UnitManagerListener;
 import nulloojavaai.utility.SpringCommunications;
 
@@ -54,21 +57,36 @@ public class NullOOJavaAI extends AbstractOOAI implements OOAI {
         this.teamId = teamId;
         MilitaryManager militaryManager = new MilitaryManager(spring);
         BuildManager buildManager = new BuildManager(spring);
-        HashMap<UnitManagerListener, Integer> unitPriorityMapping = 
+        EconomyManager economyManager = new EconomyManager(spring);
+        HashMap<UnitManagerListener, Integer> unitPriorityMapping =
                 new HashMap<UnitManagerListener, Integer>();
         unitPriorityMapping.put(militaryManager, 3);
         unitPriorityMapping.put(buildManager, 2);
+        unitPriorityMapping.put(economyManager, 4);
         PrioritizedUnitManager unitManager = new PrioritizedUnitManager(spring, unitPriorityMapping);
         buildManager.setUnitManager(unitManager);
         militaryManager.setUnitManager(unitManager);
-        modules.addAll(Arrays.asList(militaryManager, buildManager, unitManager));
+        economyManager.setUnitManager(unitManager);
+        modules.addAll(Arrays.asList(unitManager, militaryManager, //note:
+                buildManager, economyManager)); //unit manager needs to remain
+                                                // first so it be notified about unit events  
     }
 
     @Override
     public int init(int teamId, OOAICallback callback) {
         this.spring.setClb(callback);
         spring.getClb().getCheats().setEnabled(true);
-        
+        Resource energy = null;
+        for (Resource resource : spring.getClb().getResources()) {
+            if (resource.getName().equals("Energy")) {
+                energy = resource;
+            }
+        }
+        for (UnitDef unitDef : spring.getClb().getUnitDefs()) {
+            if (unitDef.getResourceMake(energy) > 0) {
+                spring.sendTextMsg(unitDef.getName());
+            }
+        }
         for (Module module : modules) {
             module.init(teamId, callback);
             log.info(module.getModuleName() + "initialized");
@@ -88,7 +106,7 @@ public class NullOOJavaAI extends AbstractOOAI implements OOAI {
     public int message(int player, String message) {
         log.info("message from " + String.valueOf(player) + ":" + message);
         for (Module module : modules) {
-            module.message(player, message);            
+            module.message(player, message);
         }
         return 0; // signaling: OK
     }
@@ -103,8 +121,8 @@ public class NullOOJavaAI extends AbstractOOAI implements OOAI {
     }
 
     @Override
-    public int unitFinished(Unit unit) {     
-        log.info("unitFinished " + unit.getDef().getName());
+    public int unitFinished(Unit unit) {
+        log.info("unitFinished: " + unit.getDef().getName());
         for (Module module : modules) {
             module.unitFinished(unit);
         }
@@ -113,6 +131,7 @@ public class NullOOJavaAI extends AbstractOOAI implements OOAI {
 
     @Override
     public int unitIdle(Unit unit) {
+        log.info("unitIdle: " + unit.getDef().getName());
         for (Module module : modules) {
             module.unitIdle(unit);
         }
@@ -121,6 +140,7 @@ public class NullOOJavaAI extends AbstractOOAI implements OOAI {
 
     @Override
     public int unitMoveFailed(Unit unit) {
+        log.info("unitMoveFailed: " + unit.getDef().getName());
         for (Module module : modules) {
             module.unitMoveFailed(unit);
         }
@@ -129,6 +149,7 @@ public class NullOOJavaAI extends AbstractOOAI implements OOAI {
 
     @Override
     public int unitDamaged(Unit unit, Unit attacker, float damage, AIFloat3 dir, WeaponDef weaponDef, boolean paralyzed) {
+        //log.info("unitDamaged: " + unit.getDef().getName());
         for (Module module : modules) {
             module.unitDamaged(unit, attacker, damage, dir, weaponDef, paralyzed);
         }
@@ -137,6 +158,7 @@ public class NullOOJavaAI extends AbstractOOAI implements OOAI {
 
     @Override
     public int unitDestroyed(Unit unit, Unit attacker) {
+        log.info("unitDestroyed: " + unit.getDef().getName());
         for (Module module : modules) {
             module.unitDestroyed(unit, attacker);
         }
@@ -145,6 +167,7 @@ public class NullOOJavaAI extends AbstractOOAI implements OOAI {
 
     @Override
     public int unitGiven(Unit unit, int oldTeamId, int newTeamId) {
+        log.info("unitGiven: " + unit.getDef().getName());
         for (Module module : modules) {
             module.unitGiven(unit, oldTeamId, newTeamId);
         }
@@ -153,6 +176,7 @@ public class NullOOJavaAI extends AbstractOOAI implements OOAI {
 
     @Override
     public int unitCaptured(Unit unit, int oldTeamId, int newTeamId) {
+        log.info("unitCaptured: " + unit.getDef().getName());
         for (Module module : modules) {
             module.unitCaptured(unit, oldTeamId, newTeamId);
         }
@@ -225,6 +249,7 @@ public class NullOOJavaAI extends AbstractOOAI implements OOAI {
 
     @Override
     public int commandFinished(Unit unit, int commandId, int commandTopicId) {
+        log.info("commandFinished, unit:" + unit.getDef().getName() + " command: " + commandTopicId);
         for (Module module : modules) {
             module.commandFinished(unit, commandId, commandTopicId);
         }

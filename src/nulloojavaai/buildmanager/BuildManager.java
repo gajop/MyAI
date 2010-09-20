@@ -12,10 +12,8 @@ import com.springrts.ai.oo.OOAICallback;
 import com.springrts.ai.oo.Resource;
 import com.springrts.ai.oo.Unit;
 import com.springrts.ai.oo.UnitDef;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+
+import java.util.*;
 import java.util.logging.Logger;
 
 import nulloojavaai.Module;
@@ -43,6 +41,7 @@ public class BuildManager extends Module implements UnitManagerListener {
     SpringCommunications spring;
     Logger log;
     UnitManager unitManager;
+    Set<Unit> ownedUnits = new HashSet<Unit>();
 
     public void setUnitManager(UnitManager unitManager) {
         this.unitManager = unitManager;
@@ -162,14 +161,17 @@ public class BuildManager extends Module implements UnitManagerListener {
                         continue;
                     } else if (VectorUtil.distance(builder.getPos(), vehPlant.getPos()) < 60) {
                         continue;
-                    }
+                    }                    
                     if (eCurrent < eMax / 4) { //25% total energy, need more
                         if (buildScheduler.canBuild(solarPlant, builder)) {
                             AIFloat3 position = spring.getClb().
                                     getMap().findClosestBuildSite(solarPlant,
                                     builder.getPos(), 300, 5, 0);
                             if (buildScheduler.canBuild(solarPlant, builder, position)) {
-                                buildScheduler.build(solarPlant, builder, position);
+                                boolean ownershipGranted = ownedUnits.contains(builder) || unitManager.requestUnit(builder, this);
+                                if (ownershipGranted) {
+                                    buildScheduler.build(solarPlant, builder, position);
+                                }
                             }
                         }
                     } else if (mCurrent < mMax / 3) {  //33% total metal, need more
@@ -180,8 +182,11 @@ public class BuildManager extends Module implements UnitManagerListener {
                             AIFloat3 builderPos = builder.getPos();
                             AIFloat3 bestPos = findNearestUnusedMetalSpot(builderPos);
                             if (buildScheduler.canBuild(mex, builder, bestPos)) {
-                                buildScheduler.build(mex, builder, bestPos);
-                                takenResources.add(bestPos);
+                                boolean ownershipGranted = ownedUnits.contains(builder) || unitManager.requestUnit(builder, this);
+                                if (ownershipGranted) {
+                                    buildScheduler.build(mex, builder, bestPos);
+                                    takenResources.add(bestPos);
+                                }
                             }
                         }
                     } else if (mCurrent > mMax / 2) {
@@ -190,7 +195,10 @@ public class BuildManager extends Module implements UnitManagerListener {
                                     getMap().findClosestBuildSite(nano,
                                     vehPlant.getPos(), 300, 8, 0);
                             if (buildScheduler.canBuild(nano, builder, position)) {
-                                buildScheduler.build(nano, builder, position);
+                                boolean ownershipGranted = ownedUnits.contains(builder) || unitManager.requestUnit(builder, this);
+                                if (ownershipGranted) {
+                                    buildScheduler.build(nano, builder, position);
+                                }
                             }
                         }
                     } /*else {
@@ -220,23 +228,26 @@ public class BuildManager extends Module implements UnitManagerListener {
         } else if (unit.getDef().equals(this.vehPlantType)) {
             this.vehPlant = unit;            
         } else if (unit.getDef().equals(nano)) {
-            AIFloat3 patrolPos = new AIFloat3(unit.getPos());
-            patrolPos.x -= 50;
-            AICommand command = new PatrolUnitAICommand(unit,
-                    -1, new ArrayList<AICommand.Option>(),
-                    10000, patrolPos);
-            spring.handleEngineCommand(command);
-            log.info("sending unit to patrol");
-            command = new SetRepeatUnitAICommand(unit,
-                    -1, new ArrayList<AICommand.Option>(),
-                    10000, true);
-            spring.handleEngineCommand(command);
-            log.info("sending unit to repeat");
-            command = new SetFireStateUnitAICommand(unit,
-                    -1, new ArrayList<AICommand.Option>(),
-                    10000, 3);
-            spring.handleEngineCommand(command);
-            log.info("sending unit to repeat");
+            boolean ownershipGranted = unitManager.requestUnit(unit, this);
+            if (ownershipGranted) {
+                AIFloat3 patrolPos = new AIFloat3(unit.getPos());
+                patrolPos.x -= 50;
+                AICommand command = new PatrolUnitAICommand(unit,
+                        -1, new ArrayList<AICommand.Option>(),
+                        10000, patrolPos);
+                spring.handleEngineCommand(command);
+                log.info("sending unit to patrol");
+                command = new SetRepeatUnitAICommand(unit,
+                        -1, new ArrayList<AICommand.Option>(),
+                        10000, true);
+                spring.handleEngineCommand(command);
+                log.info("sending unit to repeat");
+                command = new SetFireStateUnitAICommand(unit,
+                        -1, new ArrayList<AICommand.Option>(),
+                        10000, 3);
+                spring.handleEngineCommand(command);
+                log.info("sending unit to repeat");
+            }
         }
         buildScheduler.unitFinished(unit);
         return 0; 
@@ -258,6 +269,16 @@ public class BuildManager extends Module implements UnitManagerListener {
     }
 
     @Override
+    public int commandFinished(Unit unit, int commandId, int commandTopicId) {
+        if (unit.getDef().getName().equals("armcv")) {
+            if (com.springrts.ai.command.BuildUnitAICommand.TOPIC == commandTopicId) {
+                unitManager.releaseUnit(unit, this);
+            }
+        }
+        return 0;    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
     public int unitDestroyed(Unit unit, Unit attacker) {
         buildScheduler.unitDestroyed(unit);
         if (unit.getDef().equals(mex)) {
@@ -275,10 +296,12 @@ public class BuildManager extends Module implements UnitManagerListener {
     }
 
     public void onUnitOwnershipGained(Unit unit) {
+        ownedUnits.add(unit);
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public void onUnitOwnershipLost(Unit unit) {
+        ownedUnits.remove(unit);
         //To change body of implemented methods use File | Settings | File Templates.
     }
 }

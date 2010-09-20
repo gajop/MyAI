@@ -6,6 +6,8 @@
 package nulloojavaai.utility;
 
 import com.springrts.ai.AICommand;
+import com.springrts.ai.AIFloat3;
+import com.springrts.ai.command.CreateLineFigureDrawerAICommand;
 import com.springrts.ai.command.SendTextMessageAICommand;
 import com.springrts.ai.oo.OOAICallback;
 import java.util.LinkedList;
@@ -56,5 +58,11 @@ public class SpringCommunications {
         SpringLogger newLogger = new SpringLogger(topic, path);
         loggers.add(newLogger);
         return newLogger.getLog();
+    }
+
+    public void drawLine(AIFloat3 begin, AIFloat3 end) {
+        AICommand drawCommand = new CreateLineFigureDrawerAICommand(begin,
+                            end, 10, false, 10000, 0, 42);
+        handleEngineCommand(drawCommand);
     }
 }

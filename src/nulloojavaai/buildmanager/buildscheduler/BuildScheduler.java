@@ -25,7 +25,6 @@ public class BuildScheduler {
     Set<Unit> builders = new HashSet<Unit>();
     Set<Unit> idleBuilders = new HashSet<Unit>();
     Set<Unit> busyBuilders = new HashSet<Unit>();
-    Set<Unit> ownedUnits = new HashSet<Unit>();
     SpringCommunications spring;
     Logger log;
 
@@ -69,7 +68,7 @@ public class BuildScheduler {
             return false;
         }
         return canBuild(unitDef, builder) && spring.getClb().
-                getMap().isPossibleToBuildAt(unitDef, position, 0);
+                getMap().isPossibleToBuildAt(unitDef, position, 2);
     }
 
     public boolean build(UnitDef unitDef, Unit builder, AIFloat3 position) {
@@ -78,7 +77,7 @@ public class BuildScheduler {
         }
         AICommand command = new BuildUnitAICommand(builder, -1,
                 new ArrayList<AICommand.Option>(), 10000, unitDef,
-                position, 0);
+                position, 2);
         spring.handleEngineCommand(command);
         idleBuilders.remove(builder);
         busyBuilders.add(builder);
@@ -93,7 +92,7 @@ public class BuildScheduler {
         }
         AICommand command = new BuildUnitAICommand(builder, -1,
                 new ArrayList<AICommand.Option>(), 10000, unitDef,
-                new AIFloat3(), 0);
+                new AIFloat3(), 2);
         spring.handleEngineCommand(command);
         idleBuilders.remove(builder);
         busyBuilders.add(builder);
@@ -123,7 +122,6 @@ public class BuildScheduler {
             builders.remove(unit);
             busyBuilders.remove(unit);
             idleBuilders.remove(unit);
-            ownedUnits.remove(unit);
         }
     }
     
@@ -131,18 +129,6 @@ public class BuildScheduler {
         if (isBuilder(unit)) {
             idleBuilders.add(unit);
             busyBuilders.remove(unit);
-        }
-    }
-
-    public void unitLostOwnership(Unit unit) {
-        if (isBuilder(unit)) {
-            ownedUnits.remove(unit);
-        }
-    }
-
-    public void unitGainedOwnership(Unit unit) {
-        if (isBuilder(unit)) {
-            ownedUnits.add(unit);
         }
     }
 }

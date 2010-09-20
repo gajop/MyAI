@@ -5,6 +5,9 @@
 
 package nulloojavaai.militarymanager.toplevel;
 
+import com.springrts.ai.AICommand;
+import com.springrts.ai.command.AddPointDrawAICommand;
+import com.springrts.ai.command.CreateLineFigureDrawerAICommand;
 import com.springrts.ai.oo.Unit;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,14 +41,13 @@ public class DeterministicForceGenerator extends ForceGenerator {
             for (DeterministicCentroid centroid : result.getCentroids()) {
                 forces.add(forceFactory.generate(centroid));
             }
-            /* DRAWING DOESNT WORK ATM
+/*
             int centroidNum = 0;
             for (DeterministicCentroid centroid : result.getCentroids()) {
                 AICommand drawCommand = new AddPointDrawAICommand(centroid.getCenter(), "test");
                 for (Unit unit : centroid.getAssignments()) {
-                    spring.handleEngineCommand(drawCommand);
-                    drawCommand = new AddLineDrawAICommand(unit.getPos(),
-                            centroid.getCenter());
+                    drawCommand = new CreateLineFigureDrawerAICommand(unit.getPos(),
+                            centroid.getCenter(), 1, false, 10000, 0, 42);
                     spring.handleEngineCommand(drawCommand);
                 }
                 centroidNum++;
