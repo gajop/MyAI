@@ -9,6 +9,8 @@ import com.springrts.ai.AIFloat3;
 import com.springrts.ai.oo.Unit;
 
 import java.util.Collection;
+import java.util.List;
+
 import javax.vecmath.Vector3f;
 
 /**

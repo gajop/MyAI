@@ -76,17 +76,6 @@ public class NullOOJavaAI extends AbstractOOAI implements OOAI {
     public int init(int teamId, OOAICallback callback) {
         this.spring.setClb(callback);
         spring.getClb().getCheats().setEnabled(true);
-        Resource energy = null;
-        for (Resource resource : spring.getClb().getResources()) {
-            if (resource.getName().equals("Energy")) {
-                energy = resource;
-            }
-        }
-        for (UnitDef unitDef : spring.getClb().getUnitDefs()) {
-            if (unitDef.getResourceMake(energy) > 0) {
-                spring.sendTextMsg(unitDef.getName());
-            }
-        }
         for (Module module : modules) {
             module.init(teamId, callback);
             log.info(module.getModuleName() + "initialized");

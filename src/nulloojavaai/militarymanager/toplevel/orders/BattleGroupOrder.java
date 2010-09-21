@@ -5,17 +5,20 @@
 
 package nulloojavaai.militarymanager.toplevel.orders;
 
-import nulloojavaai.militarymanager.BattleGroup;
+import nulloojavaai.militarymanager.battlegroup.BattleGroup;
 
 /**
  *
  * @author gajop
  */
 public abstract class BattleGroupOrder {
+	public enum OrderType { MOVE, IDLE};
+	OrderType orderType;
     BattleGroup actor;
 
-    public BattleGroupOrder(BattleGroup actor) {
+    public BattleGroupOrder(BattleGroup actor, OrderType orderType) {
         this.actor = actor;
+        this.orderType = orderType;
     }
 
     public BattleGroup getActor() {
@@ -24,28 +27,14 @@ public abstract class BattleGroupOrder {
 
     public void setActor(BattleGroup actor) {
         this.actor = actor;
-    }
+    } 
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final BattleGroupOrder other = (BattleGroupOrder) obj;
-        if (this.actor != other.actor && (this.actor == null || !this.actor.equals(other.actor))) {
-            return false;
-        }
-        return true;
-    }
+	public OrderType getOrderType() {
+		return orderType;
+	}
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 59 * hash + (this.actor != null ? this.actor.hashCode() : 0);
-        return hash;
-    }
+	public void setOrderType(OrderType orderType) {
+		this.orderType = orderType;
+	}
 
 }

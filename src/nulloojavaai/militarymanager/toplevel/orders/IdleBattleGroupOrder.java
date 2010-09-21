@@ -5,7 +5,7 @@
 
 package nulloojavaai.militarymanager.toplevel.orders;
 
-import nulloojavaai.militarymanager.BattleGroup;
+import nulloojavaai.militarymanager.battlegroup.BattleGroup;
 
 /**
  *
@@ -14,7 +14,7 @@ import nulloojavaai.militarymanager.BattleGroup;
 public class IdleBattleGroupOrder extends BattleGroupOrder {
 
     public IdleBattleGroupOrder(BattleGroup actor) {
-        super(actor);
+        super(actor, BattleGroupOrder.OrderType.IDLE);
     }
 
 }

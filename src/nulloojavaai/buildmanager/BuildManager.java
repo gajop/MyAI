@@ -199,13 +199,24 @@ public class BuildManager extends Module implements UnitManagerListener {
                                 if (ownershipGranted) {
                                     buildScheduler.build(nano, builder, position);
                                 }
+                            } else {
+                                if (resourcePositions.isEmpty()) {
+                                    break;
+                                }
+                                if (buildScheduler.canBuild(mex, builder)) {
+                                    AIFloat3 builderPos = builder.getPos();
+                                    AIFloat3 bestPos = findNearestUnusedMetalSpot(builderPos);
+                                    if (buildScheduler.canBuild(mex, builder, bestPos)) {
+                                        boolean ownershipGranted = ownedUnits.contains(builder) || unitManager.requestUnit(builder, this);
+                                        if (ownershipGranted) {
+                                            buildScheduler.build(mex, builder, bestPos);
+                                            takenResources.add(bestPos);
+                                        }
+                                    }
+                                }
                             }
                         }
-                    } /*else {
-                        if (this.vehPlant != null) {
-                            buildScheduler.assist(builder, vehPlant);
-                        }
-                    }  */
+                    }  
                 }
                 UnitDef currentUnitDef = repeatingBuildOrder.get(repeatingBOPos);
                 if (vehPlant != null && buildScheduler.

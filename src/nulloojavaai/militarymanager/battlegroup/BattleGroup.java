@@ -3,24 +3,31 @@
  * and open the template in the editor.
  */
 
-package nulloojavaai.militarymanager;
+package nulloojavaai.militarymanager.battlegroup;
 
 import com.springrts.ai.oo.Unit;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import nulloojavaai.militarymanager.toplevel.orders.BattleGroupOrder;
+import nulloojavaai.militarymanager.toplevel.orders.IdleBattleGroupOrder;
 
 /**
  *
  * @author gajop
  */
 public class BattleGroup {
-    List<Unit> units;
+    Set<Unit> units = new HashSet<Unit>();
     boolean sent = false;
+    BattleGroupOrder order = new IdleBattleGroupOrder(this);
 
     public boolean isSent() {
         return sent;
     }
 
-    public List<Unit> getUnits() {
+    public Set<Unit> getUnits() {
         return units;
     }
 
@@ -28,8 +35,12 @@ public class BattleGroup {
         this.sent = sent;
     }
 
-    public void setUnits(List<Unit> units) {
-        this.units = units;
+    public void addUnit(Unit unit) {
+        units.add(unit);
+    }
+    
+    public void removeUnit(Unit unit) {
+    	units.remove(unit);
     }
 
     @Override
@@ -58,7 +69,11 @@ public class BattleGroup {
         return hash;
     }
 
-    public BattleGroup(List<Unit> units) {
-        this.units = units;
-    }
+	public BattleGroupOrder getOrder() {
+		return order;
+	}
+
+	public void setOrder(BattleGroupOrder order) {
+		this.order = order;
+	}
 }

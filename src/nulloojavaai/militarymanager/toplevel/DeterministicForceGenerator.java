@@ -12,8 +12,8 @@ import com.springrts.ai.oo.Unit;
 import java.util.LinkedList;
 import java.util.List;
 
-import nulloojavaai.militarymanager.BattleGroup;
 import nulloojavaai.militarymanager.MilitaryManager;
+import nulloojavaai.militarymanager.battlegroup.BattleGroup;
 import nulloojavaai.utility.SpringCommunications;
 
 /**
@@ -22,6 +22,7 @@ import nulloojavaai.utility.SpringCommunications;
  */
 public class DeterministicForceGenerator extends ForceGenerator {
     SpringCommunications spring;
+    KMeansWrapper kmeans = new KMeansWrapper();
     
     public DeterministicForceGenerator(SpringCommunications spring,
             MilitaryManager military, ForceFactory forceFactory) {
@@ -35,8 +36,7 @@ public class DeterministicForceGenerator extends ForceGenerator {
             forces.add(forceFactory.generate(battleGroup));
         }
         List<Unit> enemyUnits = spring.getClb().getEnemyUnits();
-        if (!enemyUnits.isEmpty()) {
-            KMeansWrapper kmeans = new KMeansWrapper();
+        if (!enemyUnits.isEmpty()) {            
             DeterministicClusteringResult result = kmeans.cluster(enemyUnits);
             for (DeterministicCentroid centroid : result.getCentroids()) {
                 forces.add(forceFactory.generate(centroid));

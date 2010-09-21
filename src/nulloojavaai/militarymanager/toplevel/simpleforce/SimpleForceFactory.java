@@ -11,8 +11,9 @@ import com.springrts.ai.oo.UnitDef;
 import com.springrts.ai.oo.WeaponDef;
 import com.springrts.ai.oo.WeaponMount;
 import java.util.Collection;
+import java.util.logging.Logger;
 
-import nulloojavaai.militarymanager.BattleGroup;
+import nulloojavaai.militarymanager.battlegroup.BattleGroup;
 import nulloojavaai.militarymanager.toplevel.DeterministicCentroid;
 import nulloojavaai.militarymanager.toplevel.Force;
 import nulloojavaai.militarymanager.toplevel.ForceFactory;
@@ -31,14 +32,20 @@ public class SimpleForceFactory implements ForceFactory {
     }
 
     public Force generate(DeterministicCentroid clusteredGroup) {
-        SimpleForce newForce = new SimpleForce(spring, clusteredGroup.getCenter());
+    	int teamId = -1;
+    	if (!clusteredGroup.getAssignments().isEmpty()) {
+    		teamId = clusteredGroup.getAssignments().get(0).getTeam();
+    	}
+    	SimpleForce newForce = new SimpleForce(spring, clusteredGroup.getCenter(), teamId);
         return generateFields(clusteredGroup.getAssignments(), newForce);
     }
 
     SpringCommunications spring;
+    Logger log;
 
     public SimpleForceFactory(SpringCommunications spring) {
         this.spring = spring;
+        this.log = spring.getLogger("force-factory");
     }
 
     private SimpleForce generateFields(Collection<Unit> units, 
@@ -50,7 +57,11 @@ public class SimpleForceFactory implements ForceFactory {
             double value = 0;
             double range = 0;
             for (Unit unit : units) {
-                UnitDef unitDef = unit.getDef();
+            	UnitDef unitDef = unit.getDef();
+            	if (unitDef == null) {
+            		log.severe("unitDef not found for unit of id: " + unit.getUnitId());
+            		continue;
+            	}                
                 hp += unit.getHealth();
                 speed += unitDef.getSpeed();                
                 for (Resource resource : spring.getClb().getResources()) {

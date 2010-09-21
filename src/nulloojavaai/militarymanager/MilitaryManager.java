@@ -15,11 +15,18 @@ import java.util.LinkedList;
 import java.util.List;
 
 import nulloojavaai.Module;
+import nulloojavaai.militarymanager.battlegroup.BattleGroup;
+import nulloojavaai.militarymanager.battlegroup.BattleGroupPlanner;
+import nulloojavaai.militarymanager.battlegroup.BattleGroupScheduler;
+import nulloojavaai.militarymanager.battlegroup.SimpleBattleGroupPlanner;
+import nulloojavaai.militarymanager.battlegroup.SimpleBattleGroupScheduler;
+import nulloojavaai.militarymanager.toplevel.orders.MoveBattleGroupOrder;
 import nulloojavaai.militarymanager.toplevel.simpleforce.SimpleForce;
 import nulloojavaai.unitmanager.UnitManager;
 import nulloojavaai.unitmanager.UnitManagerListener;
 import nulloojavaai.militarymanager.toplevel.DeterministicForceGenerator;
 import nulloojavaai.militarymanager.toplevel.Force;
+import nulloojavaai.militarymanager.toplevel.ForceGenerator;
 import nulloojavaai.militarymanager.toplevel.simpleforce.SimpleForceFactory;
 import nulloojavaai.utility.SpringCommunications;
 import nulloojavaai.utility.VectorUtil;
@@ -32,6 +39,7 @@ public class MilitaryManager extends Module implements UnitManagerListener {
     LinkedList<BattleGroup> battleGroups = new LinkedList<BattleGroup>();
     SpringCommunications spring;
     UnitManager unitManager;
+    DeterministicForceGenerator forceGenerator; 
 
     public LinkedList<BattleGroup> getBattleGroups() {
         return battleGroups;
@@ -39,18 +47,17 @@ public class MilitaryManager extends Module implements UnitManagerListener {
 
     public MilitaryManager(SpringCommunications spring) {
         this.spring = spring;
+        this.forceGenerator = new DeterministicForceGenerator(spring, 
+        		this, new SimpleForceFactory(spring));
     }
 
     @Override
     public int update(int frame) {
-        if (frame % 50 == 0) {
-            DeterministicForceGenerator forceGen = new
-                    DeterministicForceGenerator(spring, this,
-                    new SimpleForceFactory(spring));
-            List<Force> forces = forceGen.generateForces();
+        if (frame % 50 == 0) {            
+            List<Force> forces = forceGenerator.generateForces();
             for (BattleGroup battleGroup : battleGroups) {
-                if (!battleGroup.units.isEmpty()) {
-                    AIFloat3 center = VectorUtil.averageFromUnits(battleGroup.units);
+                if (!battleGroup.getUnits().isEmpty()) {
+                    AIFloat3 center = VectorUtil.averageFromUnits(battleGroup.getUnits());
                     AIFloat3 closest = null;
                     double closestDistance = Double.MAX_VALUE;
                     for (Force force : forces) {
@@ -67,14 +74,17 @@ public class MilitaryManager extends Module implements UnitManagerListener {
                     }
                     if (closest != null) {
                         double DISTANCE_OF_ENGAGEMENT = 1000;
-                        if (closestDistance < DISTANCE_OF_ENGAGEMENT || battleGroup.units.size() > 4 || battleGroup.isSent()) {
-                        //    sendTextMsg("sending to enemy units");
+                        if (closestDistance < DISTANCE_OF_ENGAGEMENT || battleGroup.getUnits().size() > 4 || battleGroup.isSent()) {
+                        	battleGroup.setOrder(new MoveBattleGroupOrder(battleGroup, closest));
+                        	BattleGroupPlanner bgPlanner = new SimpleBattleGroupPlanner(spring, battleGroup);
+                        	BattleGroupScheduler bgScheduler = new SimpleBattleGroupScheduler(spring);
+                        	bgScheduler.execute(bgPlanner.plan());
                             battleGroup.setSent(true);
-                            for (Unit bgUnit : battleGroup.units) {
+                            /*for (Unit bgUnit : battleGroup.getUnits()) {
                                 MoveUnitAICommand command = new MoveUnitAICommand(bgUnit, -1,
                                    new ArrayList<AICommand.Option>(), 10000, closest);
                                 spring.handleEngineCommand(command);
-                            }
+                            }*/
                         }
                     }
                 }
@@ -94,9 +104,11 @@ public class MilitaryManager extends Module implements UnitManagerListener {
                 }
             }
             if (selected != null) {
-                selected.units.add(unit);
+                selected.getUnits().add(unit);
             } else {
-                battleGroups.add(new BattleGroup(new LinkedList<Unit>(Arrays.asList(unit))));
+            	BattleGroup battleGroup = new BattleGroup();
+            	battleGroup.addUnit(unit);
+                battleGroups.add(battleGroup);
             }
         }
         return 0;
@@ -105,11 +117,11 @@ public class MilitaryManager extends Module implements UnitManagerListener {
     @Override
     public int unitDestroyed(Unit unit, Unit attacker) {
         for (BattleGroup battleGroup : battleGroups) {
-            battleGroup.units.remove(unit);
+            battleGroup.getUnits().remove(unit);
         }
         LinkedList<BattleGroup> newBattleGroups = new LinkedList<BattleGroup>();
         for (BattleGroup battleGroup : battleGroups) {
-            if (!battleGroup.units.isEmpty()) {
+            if (!battleGroup.getUnits().isEmpty()) {
                 newBattleGroups.add(battleGroup);
             }
         }

@@ -6,7 +6,8 @@
 package nulloojavaai.militarymanager.toplevel.orders;
 
 import com.springrts.ai.AIFloat3;
-import nulloojavaai.militarymanager.BattleGroup;
+
+import nulloojavaai.militarymanager.battlegroup.BattleGroup;
 
 /**
  *
@@ -17,7 +18,7 @@ public class MoveBattleGroupOrder extends BattleGroupOrder {
     AIFloat3 destination;
 
     public MoveBattleGroupOrder(BattleGroup actor, AIFloat3 destination) {
-        super(actor);
+        super(actor, BattleGroupOrder.OrderType.MOVE);
         this.destination = destination;
     }
 

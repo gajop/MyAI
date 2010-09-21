@@ -6,7 +6,8 @@
 package nulloojavaai.militarymanager.toplevel.simpleforce;
 
 import com.springrts.ai.AIFloat3;
-import nulloojavaai.militarymanager.BattleGroup;
+
+import nulloojavaai.militarymanager.battlegroup.BattleGroup;
 import nulloojavaai.militarymanager.toplevel.Force;
 import nulloojavaai.utility.SpringCommunications;
 
@@ -26,7 +27,7 @@ public class SimpleForce extends Force {
     SpringCommunications spring;
 
     public SimpleForce(SpringCommunications spring, AIFloat3 originalPosition,
-            double hp, double dpf, double speed, double value, double range) {
+            double hp, double dpf, double speed, double value, double range, int owner) {
         super(originalPosition);
         this.spring = spring;
         this.owner = 1;
@@ -35,6 +36,7 @@ public class SimpleForce extends Force {
         this.speed = speed;
         this.value = value;
         this.range = range;
+        this.owner = owner;
     }
 
     public SimpleForce(SpringCommunications spring, BattleGroup originalBattleGroup,
@@ -49,10 +51,10 @@ public class SimpleForce extends Force {
         this.range = range;
     }
 
-    public SimpleForce(SpringCommunications spring, AIFloat3 originalPosition) {
+    public SimpleForce(SpringCommunications spring, AIFloat3 originalPosition, int owner) {
         super(originalPosition);
         this.spring = spring;
-        this.owner = 1;
+        this.owner = owner;
     }
 
     public void setOwner(int owner) {

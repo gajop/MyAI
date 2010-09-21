@@ -49,7 +49,7 @@ public class EconomyManager extends Module implements UnitManagerListener {
 
     @Override
     public int update(int frame) {
-        if (frame % 50 != 0) return 0;        
+        if (true || frame % 50 != 0) return 0;        
         if (potentialGatherers.isEmpty()) {
             return 0;
         }

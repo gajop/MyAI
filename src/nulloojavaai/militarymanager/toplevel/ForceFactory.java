@@ -5,7 +5,7 @@
 
 package nulloojavaai.militarymanager.toplevel;
 
-import nulloojavaai.militarymanager.BattleGroup;
+import nulloojavaai.militarymanager.battlegroup.BattleGroup;
 
 /**
  *

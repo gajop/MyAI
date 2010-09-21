@@ -6,7 +6,8 @@
 package nulloojavaai.militarymanager.toplevel;
 
 import com.springrts.ai.AIFloat3;
-import nulloojavaai.militarymanager.BattleGroup;
+
+import nulloojavaai.militarymanager.battlegroup.BattleGroup;
 
 /**
  *
