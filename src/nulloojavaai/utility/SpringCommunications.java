@@ -62,7 +62,7 @@ public class SpringCommunications {
 
     public void drawLine(AIFloat3 begin, AIFloat3 end) {
         AICommand drawCommand = new CreateLineFigureDrawerAICommand(begin,
-                            end, 10, false, 10000, 0, 42);
+                            end, 10, false, 42, 0, 42);
         handleEngineCommand(drawCommand);
     }
 }

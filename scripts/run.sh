@@ -2,5 +2,5 @@
 
 cp $@ ~/.spring/$@
 pushd ~/.spring/
-spring $@
+spring-multithreaded $@
 popd

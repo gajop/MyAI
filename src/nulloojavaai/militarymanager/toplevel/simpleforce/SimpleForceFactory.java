@@ -57,6 +57,9 @@ public class SimpleForceFactory implements ForceFactory {
             double value = 0;
             double range = 0;
             for (Unit unit : units) {
+            	if (unit.isBeingBuilt()) {
+            		continue;
+            	}
             	UnitDef unitDef = unit.getDef();
             	if (unitDef == null) {
             		log.severe("unitDef not found for unit of id: " + unit.getUnitId());
@@ -65,7 +68,7 @@ public class SimpleForceFactory implements ForceFactory {
                 hp += unit.getHealth();
                 speed += unitDef.getSpeed();                
                 for (Resource resource : spring.getClb().getResources()) {
-                    if (resource.getName().equals("Metal")) {
+                    if (resource.getName().equals("Metal")) {                    	
                         value += METAL_VALUE * unitDef.getCost(resource);
                     } else if (resource.getName().equals("Solar")) {
                         value += unitDef.getCost(resource);

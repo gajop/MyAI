@@ -22,16 +22,19 @@ import nulloojavaai.utility.VectorUtil;
  */
 public class KMeansWrapper implements DeterministicClustering {
 	Map<Integer, List<AIFloat3>> clusterSets = new HashMap<Integer, List<AIFloat3>>();
+	int k = 1;
     public DeterministicClusteringResult cluster(List<Unit> units) {
         if (units.isEmpty()) {
             return new DeterministicClusteringResult(new LinkedList<DeterministicCentroid>());
         }
-        int k = (units.size() >= 4) ? units.size() / 4 : 1;
-        DeterministicClusteringResult bestResult = null;
-        double bestEvaluation = Double.MIN_VALUE;
-        boolean improved;
-        do {            
-            improved = false;
+       // k = (units.size() >= 4) ? units.size() / 4 : 1;
+        if (k > units.size()) {
+        	k = units.size();
+        }
+        DeterministicClusteringResult bestResult = null;    
+        boolean increased = false;
+        boolean decreased = false;
+        while (!increased || !decreased) {            
             DeterministicClusteringResult result;
             if (clusterSets.containsKey(k)) {
             	List<AIFloat3> oldCluster = clusterSets.get(k);
@@ -40,13 +43,42 @@ public class KMeansWrapper implements DeterministicClustering {
             	result = KMeans.cluster(k, units);	
             }       
              
-            for (Iterator<DeterministicCentroid> i = result.centroids.iterator(); i.hasNext(); ) {
+            for (Iterator<DeterministicCentroid> i = result.centroids.iterator(); i.hasNext(); ) { //remove empty clusters
             	DeterministicCentroid centroid = i.next();
             	if (centroid.getAssignments().isEmpty()) {
             		i.remove();
             	}
             }
-            double evaluation = (intraClusterDistance(result) + Double.MIN_VALUE)
+            int realK = result.centroids.size();
+            double MIN_CLUSTER_DISTANCE = 200;
+            boolean failed = false;
+            for (DeterministicCentroid first : result.getCentroids()) {
+                for (DeterministicCentroid second : result.getCentroids()) {
+                	if (first.equals(second)) {
+                		continue;
+                	}
+                	double distance = VectorUtil.distance(first.getCenter(), second.getCenter());
+                	if (distance < MIN_CLUSTER_DISTANCE) {
+                		failed = true;
+                		break;
+                	}
+                }            	
+                if (failed) {
+                	break;
+                }
+            }
+            if (failed) {
+            	k--;
+            	decreased = true;
+            } else {
+            	bestResult = result;
+            	if (k == units.size()) {
+            		break;
+            	}
+            	k++;            	
+            	increased = true;
+            }
+            /*double evaluation = (intraClusterDistance(result) + Double.MIN_VALUE)
                     / (interClusterDistance(result) + Double.MIN_VALUE);
             if (bestEvaluation < evaluation) {
                 bestEvaluation = evaluation;
@@ -56,10 +88,10 @@ public class KMeansWrapper implements DeterministicClustering {
                 for (DeterministicCentroid centroid : result.centroids) {
                 	centroids.add(centroid.center);
                 }
-                clusterSets.put(k, centroids);
+                clusterSets.put(realK, centroids);
             }
-            break;
-        } while (improved && k <= units.size());
+            break;*/
+        }
         return bestResult;
     }
 

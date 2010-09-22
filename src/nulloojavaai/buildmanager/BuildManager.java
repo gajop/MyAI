@@ -33,7 +33,7 @@ public class BuildManager extends Module implements UnitManagerListener {
     private LinkedList<UnitDef>  repeatingBuildOrder = new LinkedList<UnitDef>();
     int repeatingBOPos = 0;
     private UnitDef solarPlant = null, mex = null, vehPlantType = null, 
-            flash = null, vehcon = null, nano = null;
+            flash = null, vehcon = null, nano = null, jeffy = null;
     boolean busy = false;
     private LinkedList<AIFloat3> takenResources = new LinkedList<AIFloat3>();
     private Unit vehPlant = null;
@@ -42,6 +42,7 @@ public class BuildManager extends Module implements UnitManagerListener {
     Logger log;
     UnitManager unitManager;
     Set<Unit> ownedUnits = new HashSet<Unit>();
+    int failed = Integer.MIN_VALUE;
 
     public void setUnitManager(UnitManager unitManager) {
         this.unitManager = unitManager;
@@ -69,12 +70,14 @@ public class BuildManager extends Module implements UnitManagerListener {
                 vehcon = unitDef;
             } else if (unitDef.getName().equals("armnanotc")) {
                 nano = unitDef;
+            } else if (unitDef.getName().equals("armfav")) {
+            	jeffy = unitDef;
             }
         }
         initialBuildOrder.addAll(Arrays.asList(mex, mex, mex, solarPlant,
                 solarPlant, vehPlantType, solarPlant));
-        repeatingBuildOrder.addAll(Arrays.asList(vehcon, flash, flash, flash,
-                flash, flash));
+        repeatingBuildOrder.addAll(Arrays.asList(vehcon, jeffy, jeffy, 
+        		flash, flash, flash, flash, flash));
         return 0;
     }
 
@@ -156,67 +159,71 @@ public class BuildManager extends Module implements UnitManagerListener {
                     }
                     
                 }
-                for (Unit builder : buildScheduler.getIdleBuilders()) {
-                    if (!builder.getDef().equals(this.vehcon)) {
-                        continue;
-                    } else if (VectorUtil.distance(builder.getPos(), vehPlant.getPos()) < 60) {
-                        continue;
-                    }                    
-                    if (eCurrent < eMax / 4) { //25% total energy, need more
-                        if (buildScheduler.canBuild(solarPlant, builder)) {
-                            AIFloat3 position = spring.getClb().
-                                    getMap().findClosestBuildSite(solarPlant,
-                                    builder.getPos(), 300, 5, 0);
-                            if (buildScheduler.canBuild(solarPlant, builder, position)) {
-                                boolean ownershipGranted = ownedUnits.contains(builder) || unitManager.requestUnit(builder, this);
-                                if (ownershipGranted) {
-                                    buildScheduler.build(solarPlant, builder, position);
-                                }
-                            }
-                        }
-                    } else if (mCurrent < mMax / 3) {  //33% total metal, need more
-                        if (resourcePositions.isEmpty()) {
-                            break;
-                        }
-                        if (buildScheduler.canBuild(mex, builder)) {
-                            AIFloat3 builderPos = builder.getPos();
-                            AIFloat3 bestPos = findNearestUnusedMetalSpot(builderPos);
-                            if (buildScheduler.canBuild(mex, builder, bestPos)) {
-                                boolean ownershipGranted = ownedUnits.contains(builder) || unitManager.requestUnit(builder, this);
-                                if (ownershipGranted) {
-                                    buildScheduler.build(mex, builder, bestPos);
-                                    takenResources.add(bestPos);
-                                }
-                            }
-                        }
-                    } else if (mCurrent > mMax / 2) {
-                        if (buildScheduler.canBuild(nano, builder)) {
-                            AIFloat3 position = spring.getClb().
-                                    getMap().findClosestBuildSite(nano,
-                                    vehPlant.getPos(), 300, 8, 0);
-                            if (buildScheduler.canBuild(nano, builder, position)) {
-                                boolean ownershipGranted = ownedUnits.contains(builder) || unitManager.requestUnit(builder, this);
-                                if (ownershipGranted) {
-                                    buildScheduler.build(nano, builder, position);
-                                }
-                            } else {
-                                if (resourcePositions.isEmpty()) {
-                                    break;
-                                }
-                                if (buildScheduler.canBuild(mex, builder)) {
-                                    AIFloat3 builderPos = builder.getPos();
-                                    AIFloat3 bestPos = findNearestUnusedMetalSpot(builderPos);
-                                    if (buildScheduler.canBuild(mex, builder, bestPos)) {
-                                        boolean ownershipGranted = ownedUnits.contains(builder) || unitManager.requestUnit(builder, this);
-                                        if (ownershipGranted) {
-                                            buildScheduler.build(mex, builder, bestPos);
-                                            takenResources.add(bestPos);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }  
+                if (failed + 500 < frame) {
+		            for (Unit builder : buildScheduler.getIdleBuilders()) {
+		                if (!builder.getDef().equals(this.vehcon)) {
+		                    continue;
+		                } else if (VectorUtil.distance(builder.getPos(), vehPlant.getPos()) < 60) {
+		                    continue;
+		                }                    
+		                if (eCurrent < eMax / 4) { //25% total energy, need more
+		                    if (buildScheduler.canBuild(solarPlant, builder)) {
+		                        AIFloat3 position = spring.getClb().
+		                                getMap().findClosestBuildSite(solarPlant,
+		                                builder.getPos(), 300, 5, 0);
+		                        if (buildScheduler.canBuild(solarPlant, builder, position)) {
+		                            boolean ownershipGranted = ownedUnits.contains(builder) || unitManager.requestUnit(builder, this);
+		                            if (ownershipGranted) {
+		                                buildScheduler.build(solarPlant, builder, position);
+		                            }
+		                        }
+		                    }
+		                } else if (mCurrent < mMax / 3) {  //33% total metal, need more
+		                    if (resourcePositions.isEmpty()) {
+		                        break;
+		                    }
+		                    if (buildScheduler.canBuild(mex, builder)) {
+		                        AIFloat3 builderPos = builder.getPos();
+		                        AIFloat3 bestPos = findNearestUnusedMetalSpot(builderPos);
+		                        if (buildScheduler.canBuild(mex, builder, bestPos)) {
+		                            boolean ownershipGranted = ownedUnits.contains(builder) || unitManager.requestUnit(builder, this);
+		                            if (ownershipGranted) {
+		                                buildScheduler.build(mex, builder, bestPos);
+		                                takenResources.add(bestPos);
+		                            }
+		                        }
+		                    }
+		                } else if (mCurrent > mMax / 2) {
+		                    if (buildScheduler.canBuild(nano, builder)) {
+		                        AIFloat3 position = spring.getClb().
+		                                getMap().findClosestBuildSite(nano,
+		                                vehPlant.getPos(), 300, 8, 0);
+		                        if (buildScheduler.canBuild(nano, builder, position)) {
+		                            boolean ownershipGranted = ownedUnits.contains(builder) || unitManager.requestUnit(builder, this);
+		                            if (ownershipGranted) {
+		                                buildScheduler.build(nano, builder, position);
+		                            }
+		                        } else {
+		                            if (resourcePositions.isEmpty()) {
+		                                break;
+		                            }
+		                            if (buildScheduler.canBuild(mex, builder)) {
+		                                AIFloat3 builderPos = builder.getPos();
+		                                AIFloat3 bestPos = findNearestUnusedMetalSpot(builderPos);
+		                                if (buildScheduler.canBuild(mex, builder, bestPos)) {
+		                                    boolean ownershipGranted = ownedUnits.contains(builder) || unitManager.requestUnit(builder, this);
+		                                    if (ownershipGranted) {
+		                                        buildScheduler.build(mex, builder, bestPos);
+		                                        takenResources.add(bestPos);
+		                                    }
+		                                }
+		                            }
+		                        }
+		                    }
+		                } else {
+	                    	failed = frame;
+	                    }
+		            }
                 }
                 UnitDef currentUnitDef = repeatingBuildOrder.get(repeatingBOPos);
                 if (vehPlant != null && buildScheduler.

@@ -9,8 +9,11 @@ import com.springrts.ai.AICommand;
 import com.springrts.ai.AIFloat3;
 import com.springrts.ai.command.MoveUnitAICommand;
 import com.springrts.ai.oo.Unit;
+import com.springrts.ai.oo.UnitDef;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -27,6 +30,7 @@ import nulloojavaai.unitmanager.UnitManagerListener;
 import nulloojavaai.militarymanager.toplevel.DeterministicForceGenerator;
 import nulloojavaai.militarymanager.toplevel.Force;
 import nulloojavaai.militarymanager.toplevel.ForceGenerator;
+import nulloojavaai.militarymanager.toplevel.TopLevelPlanner;
 import nulloojavaai.militarymanager.toplevel.simpleforce.SimpleForceFactory;
 import nulloojavaai.utility.SpringCommunications;
 import nulloojavaai.utility.VectorUtil;
@@ -39,7 +43,7 @@ public class MilitaryManager extends Module implements UnitManagerListener {
     LinkedList<BattleGroup> battleGroups = new LinkedList<BattleGroup>();
     SpringCommunications spring;
     UnitManager unitManager;
-    DeterministicForceGenerator forceGenerator; 
+    TopLevelPlanner topLevelPlanner;
 
     public LinkedList<BattleGroup> getBattleGroups() {
         return battleGroups;
@@ -47,64 +51,44 @@ public class MilitaryManager extends Module implements UnitManagerListener {
 
     public MilitaryManager(SpringCommunications spring) {
         this.spring = spring;
-        this.forceGenerator = new DeterministicForceGenerator(spring, 
-        		this, new SimpleForceFactory(spring));
-    }
+        this.topLevelPlanner = new TopLevelPlanner(spring, this);
+    }    
 
     @Override
     public int update(int frame) {
-        if (frame % 50 == 0) {            
-            List<Force> forces = forceGenerator.generateForces();
-            for (BattleGroup battleGroup : battleGroups) {
-                if (!battleGroup.getUnits().isEmpty()) {
-                    AIFloat3 center = VectorUtil.averageFromUnits(battleGroup.getUnits());
-                    AIFloat3 closest = null;
-                    double closestDistance = Double.MAX_VALUE;
-                    for (Force force : forces) {
-                        SimpleForce simpleForce = (SimpleForce) force;
-                        if (simpleForce.getOwner() == spring.getClb().getTeamId()) {
-                            continue;
-                        }
-                        AIFloat3 position = simpleForce.getOriginalPosition();
-                        double distance = VectorUtil.distance(position, center);
-                        if (distance < closestDistance) {
-                            closest = position;
-                            closestDistance = distance;
-                        }
-                    }
-                    if (closest != null) {
-                        double DISTANCE_OF_ENGAGEMENT = 1000;
-                        if (closestDistance < DISTANCE_OF_ENGAGEMENT || battleGroup.getUnits().size() > 4 || battleGroup.isSent()) {
-                        	battleGroup.setOrder(new MoveBattleGroupOrder(battleGroup, closest));
-                        	BattleGroupPlanner bgPlanner = new SimpleBattleGroupPlanner(spring, battleGroup);
-                        	BattleGroupScheduler bgScheduler = new SimpleBattleGroupScheduler(spring);
-                        	bgScheduler.execute(bgPlanner.plan());
-                            battleGroup.setSent(true);
-                            /*for (Unit bgUnit : battleGroup.getUnits()) {
-                                MoveUnitAICommand command = new MoveUnitAICommand(bgUnit, -1,
-                                   new ArrayList<AICommand.Option>(), 10000, closest);
-                                spring.handleEngineCommand(command);
-                            }*/
-                        }
-                    }
-                }
-            }
+    	if (frame % 51 == 0) { //do stuff on a high level planning level
+    		topLevelPlanner.update(frame);
+    	}
+        if (frame % 50 == 0) { //do stuff on a battlegroup level
+        	for (BattleGroup battleGroup : battleGroups) {            
+            	BattleGroupPlanner bgPlanner = new SimpleBattleGroupPlanner(spring, battleGroup);
+            	BattleGroupScheduler bgScheduler = new SimpleBattleGroupScheduler(spring);
+            	bgScheduler.execute(bgPlanner.plan());
+        	}
+                           
         }
         return 0;
     }
     
     @Override
     public int unitFinished(Unit unit) {
-        if (unit.getDef().getName().equals("armflash")) {
+    	UnitDef unitDef = unit.getDef();
+    	boolean isFlash = unitDef.getName().equals("armflash");
+    	boolean isJeffy = unitDef.getName().equals("armfav");
+        if (isFlash || isJeffy) {
             BattleGroup selected = null;
-            for (BattleGroup battleGroup : battleGroups) {
+            for (BattleGroup battleGroup : battleGroups) {            	
                 if (!battleGroup.isSent()) {
-                    selected = battleGroup;
-                    break;
+                	for (Unit bgUnit : battleGroup.getUnits()) {
+                		 if (unitDef.equals(bgUnit.getDef())) {
+                             selected = battleGroup;
+                		 }
+                		 break;
+                	}
                 }
             }
             if (selected != null) {
-                selected.getUnits().add(unit);
+                selected.addUnit(unit);
             } else {
             	BattleGroup battleGroup = new BattleGroup();
             	battleGroup.addUnit(unit);
@@ -116,16 +100,13 @@ public class MilitaryManager extends Module implements UnitManagerListener {
 
     @Override
     public int unitDestroyed(Unit unit, Unit attacker) {
-        for (BattleGroup battleGroup : battleGroups) {
-            battleGroup.getUnits().remove(unit);
-        }
-        LinkedList<BattleGroup> newBattleGroups = new LinkedList<BattleGroup>();
-        for (BattleGroup battleGroup : battleGroups) {
-            if (!battleGroup.getUnits().isEmpty()) {
-                newBattleGroups.add(battleGroup);
-            }
-        }
-        battleGroups = newBattleGroups;
+    	for (Iterator<BattleGroup> bgIter = battleGroups.iterator(); bgIter.hasNext();) {
+    		BattleGroup battleGroup = bgIter.next();
+		    battleGroup.getUnits().remove(unit);
+		    if (battleGroup.getUnits().isEmpty()) {
+		    	bgIter.remove();
+		    }
+    	}        
         return 0; // signaling: OK
     }
 

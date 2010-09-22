@@ -6,8 +6,7 @@
 	MyPlayerName=gajop;
 
 	ModHash=2721138577;
-	MapHash=311717275;
-	Mapname=Altair_Crossing-V1;
+	Mapname=Comet_Catcher_Redux-V1;
 	GameType=Balanced Annihilation V7.15;
 
 	startpostype=3;

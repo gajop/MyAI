@@ -8,6 +8,7 @@ package nulloojavaai.militarymanager.toplevel;
 import com.springrts.ai.AICommand;
 import com.springrts.ai.command.AddPointDrawAICommand;
 import com.springrts.ai.command.CreateLineFigureDrawerAICommand;
+import com.springrts.ai.command.DeleteFigureDrawerAICommand;
 import com.springrts.ai.oo.Unit;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,12 +23,14 @@ import nulloojavaai.utility.SpringCommunications;
  */
 public class DeterministicForceGenerator extends ForceGenerator {
     SpringCommunications spring;
-    KMeansWrapper kmeans = new KMeansWrapper();
+    DeterministicClustering kmeans;
+    boolean drawClusters = true;
     
     public DeterministicForceGenerator(SpringCommunications spring,
             MilitaryManager military, ForceFactory forceFactory) {
         super(military, forceFactory);
         this.spring = spring;
+        this.kmeans =  new MinDistanceBasedKMeansWrapper(400);
     }
 
     public List<Force> generateForces() {
@@ -41,19 +44,28 @@ public class DeterministicForceGenerator extends ForceGenerator {
             for (DeterministicCentroid centroid : result.getCentroids()) {
                 forces.add(forceFactory.generate(centroid));
             }
-/*
-            int centroidNum = 0;
-            for (DeterministicCentroid centroid : result.getCentroids()) {
-                AICommand drawCommand = new AddPointDrawAICommand(centroid.getCenter(), "test");
-                for (Unit unit : centroid.getAssignments()) {
-                    drawCommand = new CreateLineFigureDrawerAICommand(unit.getPos(),
-                            centroid.getCenter(), 1, false, 10000, 0, 42);
-                    spring.handleEngineCommand(drawCommand);
-                }
-                centroidNum++;
-            }*/
+
+            if (drawClusters) {
+	            int centroidNum = 0;
+	            DeleteFigureDrawerAICommand command = new DeleteFigureDrawerAICommand(42);
+	            spring.handleEngineCommand(command);
+	            for (DeterministicCentroid centroid : result.getCentroids()) {
+	                for (Unit unit : centroid.getAssignments()) {
+	                    spring.drawLine(unit.getPos(), centroid.getCenter());
+	                }
+	                centroidNum++;
+	            }
+            }
         }
         return forces;
     }
+
+	public boolean isDrawClusters() {
+		return drawClusters;
+	}
+
+	public void setDrawClusters(boolean drawClusters) {
+		this.drawClusters = drawClusters;
+	}
 
 }
