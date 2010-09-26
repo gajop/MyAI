@@ -7,7 +7,7 @@ import nulloojavaai.utility.SpringCommunications;
 import java.util.*;
 import java.util.logging.Logger;
 
-public class PrioritizedUnitManager extends Module implements UnitManager {
+public class PrioritizedUnitManager implements UnitManager {
     Map<Unit, UnitManagerListener> ownership = new HashMap<Unit, UnitManagerListener>();
     Map<Unit, SortedSet<UnitManagerListener>> requests = new HashMap<Unit, SortedSet<UnitManagerListener>>();
     Map<UnitManagerListener, Integer> priorityLevels = new HashMap<UnitManagerListener, Integer>(); //the higher the greater the priority
@@ -52,8 +52,8 @@ public class PrioritizedUnitManager extends Module implements UnitManager {
             Integer ownerPriority = priorityLevels.get(owner);
             Integer requestPriority = priorityLevels.get(listener);
             if (ownerPriority < requestPriority) {
-                listener.onUnitOwnershipGained(unit);
-                owner.onUnitOwnershipLost(unit);
+                listener.unitOwnershipGained(unit);
+                owner.unitOwnershipLost(unit);
                 unitRequests.add(owner);
                 ownership.put(unit, listener);
                 return true;
@@ -81,7 +81,7 @@ public class PrioritizedUnitManager extends Module implements UnitManager {
             SortedSet<UnitManagerListener> unitRequests = requests.get(unit);
             if (!unitRequests.isEmpty()) {
                 UnitManagerListener last = unitRequests.last();
-                last.onUnitOwnershipGained(unit);
+                last.unitOwnershipGained(unit);
                 unitRequests.remove(last);
                 ownership.put(unit, last);
                 return true;
@@ -95,24 +95,22 @@ public class PrioritizedUnitManager extends Module implements UnitManager {
     }
 
     @Override
-    public String getModuleName() {
-        return "UnitManager";
-    }
-
-    @Override
-    public int unitFinished(Unit unit) {
+    public void registerUnit(Unit unit) {
         requests.put(unit, new TreeSet<UnitManagerListener>(new Comparator<UnitManagerListener>() {
             public int compare(UnitManagerListener o1, UnitManagerListener o2) {
                 return priorityLevels.get(o1).compareTo(priorityLevels.get(o2));
             }
         }));
-        return 0;
     }
 
     @Override
-    public int unitDestroyed(Unit unit, Unit attacker) {
+    public void deRegisterUnit(Unit unit) {
         ownership.remove(unit);
         requests.remove(unit);
-        return 0;
     }
+
+	@Override
+	public void register(UnitManagerListener listener) {
+		priorityLevels.put(listener, 0);
+	}
 }

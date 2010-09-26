@@ -20,6 +20,8 @@ import com.springrts.ai.AICommand;
 import com.springrts.ai.AIFloat3;
 import com.springrts.ai.oo.*;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -42,214 +44,305 @@ import nulloojavaai.utility.SpringCommunications;
  */
 public class NullOOJavaAI extends AbstractOOAI implements OOAI {
 
-    public void setSpring(SpringCommunications spring) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    private int teamId = -1;
     private List<Module> modules = new LinkedList<Module>();
     SpringCommunications spring;
     Logger log;
+    UnitManager unitManager;
 
     NullOOJavaAI(int teamId, OOAICallback callback) {
-        spring = new SpringCommunications(callback);
-        log = spring.getLogger("general");
-        this.teamId = teamId;
+        this.spring = new SpringCommunications(callback);
+        this.log = spring.getLogger("general");
         MilitaryManager militaryManager = new MilitaryManager(spring);
         BuildManager buildManager = new BuildManager(spring);
         EconomyManager economyManager = new EconomyManager(spring);
-        HashMap<UnitManagerListener, Integer> unitPriorityMapping =
-                new HashMap<UnitManagerListener, Integer>();
+        HashMap<UnitManagerListener, Integer> unitPriorityMapping = new HashMap<UnitManagerListener, Integer>();
         unitPriorityMapping.put(militaryManager, 3);
         unitPriorityMapping.put(buildManager, 2);
         unitPriorityMapping.put(economyManager, 4);
-        PrioritizedUnitManager unitManager = new PrioritizedUnitManager(spring, unitPriorityMapping);
+        this.unitManager = new PrioritizedUnitManager(spring, unitPriorityMapping);
         buildManager.setUnitManager(unitManager);
         militaryManager.setUnitManager(unitManager);
         economyManager.setUnitManager(unitManager);
-        modules.addAll(Arrays.asList(unitManager, militaryManager, //note:
-                buildManager, economyManager)); //unit manager needs to remain
-                                                // first so it be notified about unit events  
+        modules.addAll(Arrays.asList(militaryManager, buildManager, economyManager));   
     }
 
     @Override
     public int init(int teamId, OOAICallback callback) {
-        this.spring.setClb(callback);
-        spring.getClb().getCheats().setEnabled(true);
-        for (Module module : modules) {
-            module.init(teamId, callback);
-            log.info(module.getModuleName() + "initialized");
+        this.spring.setClb(callback);        
+        try {        	       
+        	spring.getClb().getCheats().setEnabled(true);
+	        for (Module module : modules) {
+	            module.init(teamId, callback);
+	            log.info(module.getModuleName() + "initialized");
+	        }
+        } catch (Throwable e) {
+        	spring.logError(getStackTrace(e));
         }
         return 0;
     }
 
     @Override
     public int update(int frame) {
-        for (Module module : modules) {
-            module.update(frame);
-        }
+    	try {
+	        for (Module module : modules) {
+	            module.update(frame);
+	        }
+	    } catch (Throwable e) {
+	    	spring.logError(getStackTrace(e));
+	    }
         return 0; // signaling: OK
     }
 
     @Override
     public int message(int player, String message) {
         log.info("message from " + String.valueOf(player) + ":" + message);
-        for (Module module : modules) {
-            module.message(player, message);
-        }
+        try {
+	        for (Module module : modules) {
+	            module.message(player, message);
+	        }
+        } catch (Throwable e) {
+        	spring.logError(getStackTrace(e));
+        }	        
         return 0; // signaling: OK
     }
 
     @Override
     public int unitCreated(Unit unit, Unit builder) {
-        log.info("unitCreated: " + unit.toString());
-        for (Module module : modules) {
-            module.unitCreated(unit, builder);
-        }
+        log.info("unitCreated: " + unit.toString());        
+        try {
+	        for (Module module : modules) {
+	            module.unitCreated(unit, builder);
+	        }
+	    } catch (Throwable e) {
+	    	spring.logError(getStackTrace(e));
+	    }
         return 0;
     }
 
     @Override
     public int unitFinished(Unit unit) {
-        log.info("unitFinished: " + unit.getDef().getName());
-        for (Module module : modules) {
-            module.unitFinished(unit);
-        }
+        log.info("unitFinished: " + unit.getDef().getName());        
+        try {
+        	this.unitManager.registerUnit(unit);
+	        for (Module module : modules) {
+	            module.unitFinished(unit);
+	        }
+	    } catch (Throwable e) {
+	    	spring.logError(getStackTrace(e));
+	    }
         return 0; // signaling: OK
     }
 
     @Override
     public int unitIdle(Unit unit) {
         log.info("unitIdle: " + unit.getDef().getName());
-        for (Module module : modules) {
-            module.unitIdle(unit);
-        }
+        try {
+	        for (Module module : modules) {
+	            module.unitIdle(unit);
+	        }
+	    } catch (Throwable e) {
+	    	spring.logError(getStackTrace(e));
+	    }
         return 0; // signaling: OK
     }
 
     @Override
     public int unitMoveFailed(Unit unit) {
         log.info("unitMoveFailed: " + unit.getDef().getName());
-        for (Module module : modules) {
-            module.unitMoveFailed(unit);
-        }
+        try {
+	        for (Module module : modules) {
+	            module.unitMoveFailed(unit);
+	        }
+	    } catch (Throwable e) {
+	    	spring.logError(getStackTrace(e));
+	    }
         return 0; // signaling: OK
     }
 
     @Override
     public int unitDamaged(Unit unit, Unit attacker, float damage, AIFloat3 dir, WeaponDef weaponDef, boolean paralyzed) {
         //log.info("unitDamaged: " + unit.getDef().getName());
-        for (Module module : modules) {
-            module.unitDamaged(unit, attacker, damage, dir, weaponDef, paralyzed);
-        }
+        try {
+	        for (Module module : modules) {
+	            module.unitDamaged(unit, attacker, damage, dir, weaponDef, paralyzed);
+	        }
+	    } catch (Throwable e) {
+	    	spring.logError(getStackTrace(e));
+	    }
         return 0; // signaling: OK
     }
 
     @Override
     public int unitDestroyed(Unit unit, Unit attacker) {
-        log.info("unitDestroyed: " + unit.getDef().getName());
-        for (Module module : modules) {
-            module.unitDestroyed(unit, attacker);
-        }
+        log.info("unitDestroyed: " + unit.getDef().getName());        
+        try {
+        	this.unitManager.deRegisterUnit(unit);
+	        for (Module module : modules) {
+	            module.unitDestroyed(unit, attacker);
+	        }
+	    } catch (Throwable e) {
+	    	spring.logError(getStackTrace(e));
+	    }
         return 0; // signaling: OK
     }
 
     @Override
     public int unitGiven(Unit unit, int oldTeamId, int newTeamId) {
-        log.info("unitGiven: " + unit.getDef().getName());
-        for (Module module : modules) {
-            module.unitGiven(unit, oldTeamId, newTeamId);
-        }
+        log.info("unitGiven: " + unit.getDef().getName());        
+        try {
+        	this.unitManager.registerUnit(unit);
+	        for (Module module : modules) {
+	            module.unitGiven(unit, oldTeamId, newTeamId);
+	        }
+	    } catch (Throwable e) {
+	    	spring.logError(getStackTrace(e));
+	    }
         return 0; // signaling: OK
     }
 
     @Override
     public int unitCaptured(Unit unit, int oldTeamId, int newTeamId) {
-        log.info("unitCaptured: " + unit.getDef().getName());
-        for (Module module : modules) {
-            module.unitCaptured(unit, oldTeamId, newTeamId);
-        }
+        log.info("unitCaptured: " + unit.getDef().getName());        
+        try {
+        	int myTeamId = this.spring.getClb().getTeamId(); 
+            if (myTeamId == newTeamId) {
+            	this.unitManager.registerUnit(unit);
+            } else if (myTeamId == oldTeamId) {
+            	this.unitManager.registerUnit(unit);
+            }
+	        for (Module module : modules) {
+	            module.unitCaptured(unit, oldTeamId, newTeamId);
+	        }
+	    } catch (Throwable e) {
+	    	spring.logError(getStackTrace(e));
+	    }
         return 0; // signaling: OK
     }
 
     @Override
     public int enemyEnterLOS(Unit enemy) {
-        for (Module module : modules) {
-            module.enemyEnterLOS(enemy);
-        }
+        try {
+	    	for (Module module : modules) {
+	            module.enemyEnterLOS(enemy);
+	        }
+	    } catch (Throwable e) {
+	    	spring.logError(getStackTrace(e));
+	    }
         return 0; // signaling: OK
     }
 
     @Override
     public int enemyLeaveLOS(Unit enemy) {
-        for (Module module : modules) {
-            module.enemyLeaveLOS(enemy);
-        }
+        try {
+	    	for (Module module : modules) {
+	            module.enemyLeaveLOS(enemy);
+	        }
+	    } catch (Throwable e) {
+	    	spring.logError(getStackTrace(e));
+	    }
         return 0; // signaling: OK
     }
 
     @Override
     public int enemyEnterRadar(Unit enemy) {
-        for (Module module : modules) {
-            module.enemyEnterRadar(enemy);
-        }
+        try {
+	    	for (Module module : modules) {
+	            module.enemyEnterRadar(enemy);
+	        }
+	    } catch (Throwable e) {
+	    	spring.logError(getStackTrace(e));
+	    }
         return 0; // signaling: OK
     }
 
     @Override
     public int enemyLeaveRadar(Unit enemy) {
-        for (Module module : modules) {
-            module.enemyLeaveRadar(enemy);
-        }
+        try {
+			for (Module module : modules) {
+		        module.enemyLeaveRadar(enemy);
+		    }
+	    } catch (Throwable e) {
+	    	spring.logError(getStackTrace(e));
+	    }
         return 0; // signaling: OK
     }
 
     @Override
     public int enemyDamaged(Unit enemy, Unit attacker, float damage, AIFloat3 dir, WeaponDef weaponDef, boolean paralyzed) {
-        for (Module module : modules) {
-            module.enemyDamaged(enemy, attacker, damage, dir, weaponDef, paralyzed);
-        }
+        try {
+	    	for (Module module : modules) {
+	            module.enemyDamaged(enemy, attacker, damage, dir, weaponDef, paralyzed);
+	        }
+	    } catch (Throwable e) {
+	    	spring.logError(getStackTrace(e));
+	    }
         return 0; // signaling: OK
     }
 
     @Override
     public int enemyDestroyed(Unit enemy, Unit attacker) {
-        for (Module module : modules) {
-            module.enemyDestroyed(enemy, attacker);
-        }
+        try {
+	    	for (Module module : modules) {
+	            module.enemyDestroyed(enemy, attacker);
+	        }
+	    } catch (Throwable e) {
+	    	spring.logError(getStackTrace(e));
+	    }
         return 0; // signaling: OK
     }
 
     @Override
     public int weaponFired(Unit unit, WeaponDef weaponDef) {
-        for (Module module : modules) {
-            module.weaponFired(unit, weaponDef);
-        }
+        try {
+	    	for (Module module : modules) {
+	            module.weaponFired(unit, weaponDef);
+	        }
+	    } catch (Throwable e) {
+	    	spring.logError(getStackTrace(e));
+	    }
         return 0; // signaling: OK
     }
 
     @Override
     public int playerCommand(List<Unit> units, AICommand command, int playerId) {
-        for (Module module : modules) {
-            module.playerCommand(units, command, playerId);
-        }
+        try {
+	    	for (Module module : modules) {
+	            module.playerCommand(units, command, playerId);
+	        }
+	    } catch (Throwable e) {
+	    	spring.logError(getStackTrace(e));
+	    }
         return 0; // signaling: OK
     }
 
     @Override
-    public int commandFinished(Unit unit, int commandId, int commandTopicId) {
-        log.info("commandFinished, unit:" + unit.getDef().getName() + " command: " + commandTopicId);
-        for (Module module : modules) {
-            module.commandFinished(unit, commandId, commandTopicId);
-        }
+    public int commandFinished(Unit unit, int commandId, int commandTopicId) {        
+    	log.info("commandFinished, unit:" + unit.getDef().getName() + " command: " + commandTopicId);
+        try {
+		    for (Module module : modules) {
+		        module.commandFinished(unit, commandId, commandTopicId);
+		    }
+	    } catch (Throwable e) {
+	    	spring.logError(getStackTrace(e));
+	    }
         return 0; // signaling: OK
     }
 
     @Override
     public int seismicPing(AIFloat3 pos, float strength) {
-        for (Module module : modules) {
-            module.seismicPing(pos, strength);
-        }
+        try {
+	    	for (Module module : modules) {
+	            module.seismicPing(pos, strength);
+	        }
+	    } catch (Throwable e) {	    	    	 
+	    	spring.logError(getStackTrace(e));
+	    }
         return 0; // signaling: OK
+    }
+    
+    String getStackTrace(Throwable e) {
+    	StringWriter sw = new StringWriter();
+    	e.printStackTrace(new PrintWriter(sw));
+    	return sw.toString();
     }
 }

@@ -5,17 +5,13 @@
 
 package nulloojavaai.militarymanager;
 
-import com.springrts.ai.AICommand;
-import com.springrts.ai.AIFloat3;
-import com.springrts.ai.command.MoveUnitAICommand;
 import com.springrts.ai.oo.Unit;
 import com.springrts.ai.oo.UnitDef;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
+
 
 import nulloojavaai.Module;
 import nulloojavaai.militarymanager.battlegroup.BattleGroup;
@@ -23,17 +19,10 @@ import nulloojavaai.militarymanager.battlegroup.BattleGroupPlanner;
 import nulloojavaai.militarymanager.battlegroup.BattleGroupScheduler;
 import nulloojavaai.militarymanager.battlegroup.SimpleBattleGroupPlanner;
 import nulloojavaai.militarymanager.battlegroup.SimpleBattleGroupScheduler;
-import nulloojavaai.militarymanager.toplevel.orders.MoveBattleGroupOrder;
-import nulloojavaai.militarymanager.toplevel.simpleforce.SimpleForce;
 import nulloojavaai.unitmanager.UnitManager;
 import nulloojavaai.unitmanager.UnitManagerListener;
-import nulloojavaai.militarymanager.toplevel.DeterministicForceGenerator;
-import nulloojavaai.militarymanager.toplevel.Force;
-import nulloojavaai.militarymanager.toplevel.ForceGenerator;
 import nulloojavaai.militarymanager.toplevel.TopLevelPlanner;
-import nulloojavaai.militarymanager.toplevel.simpleforce.SimpleForceFactory;
 import nulloojavaai.utility.SpringCommunications;
-import nulloojavaai.utility.VectorUtil;
 
 /**
  *
@@ -116,11 +105,11 @@ public class MilitaryManager extends Module implements UnitManagerListener {
     }
 
 
-    public void onUnitOwnershipGained(Unit unit) {
+    public void unitOwnershipGained(Unit unit) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void onUnitOwnershipLost(Unit unit) {
+    public void unitOwnershipLost(Unit unit) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 

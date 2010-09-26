@@ -21,6 +21,7 @@ import nulloojavaai.unitmanager.UnitManager;
 import nulloojavaai.unitmanager.UnitManagerListener;
 import nulloojavaai.buildmanager.buildscheduler.BuildScheduler;
 import nulloojavaai.utility.SpringCommunications;
+import nulloojavaai.utility.UnitDefUtil;
 import nulloojavaai.utility.VectorUtil;
 
 /**
@@ -41,7 +42,6 @@ public class BuildManager extends Module implements UnitManagerListener {
     SpringCommunications spring;
     Logger log;
     UnitManager unitManager;
-    Set<Unit> ownedUnits = new HashSet<Unit>();
     int failed = Integer.MIN_VALUE;
 
     public void setUnitManager(UnitManager unitManager) {
@@ -120,14 +120,36 @@ public class BuildManager extends Module implements UnitManagerListener {
 
     @Override
     public int update(int frame) {
+    	if (frame == 1) {
+	        AIFloat3 centerEnemy = VectorUtil.averageFromUnits(spring.getClb().getEnemyUnits());
+	        AIFloat3 centerMe = VectorUtil.averageFromUnits(spring.getClb().getTeamUnits());
+	        double dx = centerMe.x - centerEnemy.x;
+	        double dz = centerMe.z - centerEnemy.z;
+	        spring.sendTextMsg(String.valueOf(dx) + " "  + String.valueOf(dz));
+	        if (Math.abs(dx) > Math.abs(dz)) {
+	        	if (dx > 0) {
+	        		buildScheduler.setFacing(3); //left
+	        	} else {
+	        		buildScheduler.setFacing(1); //right
+	        	}
+	        } else {
+	        	if (dz > 0) {
+	        		buildScheduler.setFacing(2); //up        		
+	        	} else {
+	        		buildScheduler.setFacing(0); //down    		
+	        	}
+	        }
+    	}        	
         if (this.commander != null) {
             if (!initialBuildOrder.isEmpty()) {
                 UnitDef currentUnitDef = initialBuildOrder.getFirst();
                 if (buildScheduler.canBuild(currentUnitDef, this.commander)) {
                     AIFloat3 position;
                     if (!currentUnitDef.equals(mex)) {
-                        position = spring.getClb().getMap().findClosestBuildSite(currentUnitDef,
-                                this.commander.getPos(), 300, 5, 0);
+                    	position = this.buildScheduler.findClosestBuildSite(currentUnitDef,
+                                this.commander.getPos(), 300);
+                        /*position = spring.getClb().getMap().findClosestBuildSite(currentUnitDef,
+                                this.commander.getPos(), 300, 8, buildScheduler.getFacing());*/
                     } else {
                         position = findNearestUnusedMetalSpot(this.commander.getPos());
                         takenResources.add(position);                        
@@ -168,11 +190,12 @@ public class BuildManager extends Module implements UnitManagerListener {
 		                }                    
 		                if (eCurrent < eMax / 4) { //25% total energy, need more
 		                    if (buildScheduler.canBuild(solarPlant, builder)) {
-		                        AIFloat3 position = spring.getClb().
+		                    	AIFloat3 position = buildScheduler.findClosestBuildSite(solarPlant, this.commander.getPos(), 300);
+		                      /*  AIFloat3 position = spring.getClb().
 		                                getMap().findClosestBuildSite(solarPlant,
-		                                builder.getPos(), 300, 5, 0);
+		                                this.commander.getPos(), 300, 8, this.buildScheduler.getFacing());*/
 		                        if (buildScheduler.canBuild(solarPlant, builder, position)) {
-		                            boolean ownershipGranted = ownedUnits.contains(builder) || unitManager.requestUnit(builder, this);
+		                            boolean ownershipGranted = unitManager.requestUnit(builder, this);
 		                            if (ownershipGranted) {
 		                                buildScheduler.build(solarPlant, builder, position);
 		                            }
@@ -186,7 +209,7 @@ public class BuildManager extends Module implements UnitManagerListener {
 		                        AIFloat3 builderPos = builder.getPos();
 		                        AIFloat3 bestPos = findNearestUnusedMetalSpot(builderPos);
 		                        if (buildScheduler.canBuild(mex, builder, bestPos)) {
-		                            boolean ownershipGranted = ownedUnits.contains(builder) || unitManager.requestUnit(builder, this);
+		                            boolean ownershipGranted = unitManager.requestUnit(builder, this);
 		                            if (ownershipGranted) {
 		                                buildScheduler.build(mex, builder, bestPos);
 		                                takenResources.add(bestPos);
@@ -195,11 +218,10 @@ public class BuildManager extends Module implements UnitManagerListener {
 		                    }
 		                } else if (mCurrent > mMax / 2) {
 		                    if (buildScheduler.canBuild(nano, builder)) {
-		                        AIFloat3 position = spring.getClb().
-		                                getMap().findClosestBuildSite(nano,
-		                                vehPlant.getPos(), 300, 8, 0);
+		                       /* AIFloat3 position = spring.getClb().getMap().findClosestBuildSite(nano, vehPlant.getPos(), 300, 8, this.buildScheduler.getFacing());*/
+		                        AIFloat3 position = this.buildScheduler.findClosestBuildSite(nano, vehPlant.getPos(), 300);
 		                        if (buildScheduler.canBuild(nano, builder, position)) {
-		                            boolean ownershipGranted = ownedUnits.contains(builder) || unitManager.requestUnit(builder, this);
+		                            boolean ownershipGranted = unitManager.requestUnit(builder, this);
 		                            if (ownershipGranted) {
 		                                buildScheduler.build(nano, builder, position);
 		                            }
@@ -211,7 +233,7 @@ public class BuildManager extends Module implements UnitManagerListener {
 		                                AIFloat3 builderPos = builder.getPos();
 		                                AIFloat3 bestPos = findNearestUnusedMetalSpot(builderPos);
 		                                if (buildScheduler.canBuild(mex, builder, bestPos)) {
-		                                    boolean ownershipGranted = ownedUnits.contains(builder) || unitManager.requestUnit(builder, this);
+		                                    boolean ownershipGranted = unitManager.requestUnit(builder, this);
 		                                    if (ownershipGranted) {
 		                                        buildScheduler.build(mex, builder, bestPos);
 		                                        takenResources.add(bestPos);
@@ -241,11 +263,12 @@ public class BuildManager extends Module implements UnitManagerListener {
 
     @Override
     public int unitFinished(Unit unit) {
+    	buildScheduler.unitFinished(unit);
         if (unit.getDef().getName().equals("armcom")) {
             this.commander = unit;
         } else if (unit.getDef().equals(this.vehPlantType)) {
             this.vehPlant = unit;            
-        } else if (unit.getDef().equals(nano)) {
+        } else if (UnitDefUtil.isNano(unit.getDef())) {
             boolean ownershipGranted = unitManager.requestUnit(unit, this);
             if (ownershipGranted) {
                 AIFloat3 patrolPos = new AIFloat3(unit.getPos());
@@ -266,13 +289,13 @@ public class BuildManager extends Module implements UnitManagerListener {
                 spring.handleEngineCommand(command);
                 log.info("sending unit to repeat");
             }
-        }
-        buildScheduler.unitFinished(unit);
+        }        
         return 0; 
     }
     
     @Override
     public int unitIdle(Unit unit) {
+    	buildScheduler.unitIdle(unit);
         if (this.commander.equals(unit)) {
             this.busy = false;
             if (initialBuildOrder.isEmpty()) {
@@ -281,8 +304,7 @@ public class BuildManager extends Module implements UnitManagerListener {
                           10000, this.vehPlant);
                 spring.handleEngineCommand(command);
             }
-        }
-        buildScheduler.unitIdle(unit);
+        }        
         return 0; 
     }
 
@@ -313,13 +335,19 @@ public class BuildManager extends Module implements UnitManagerListener {
         return "BuildManager";
     }
 
-    public void onUnitOwnershipGained(Unit unit) {
-        ownedUnits.add(unit);
+    public void unitOwnershipGained(Unit unit) {
+        buildScheduler.unitOwnershipGained(unit);
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void onUnitOwnershipLost(Unit unit) {
-        ownedUnits.remove(unit);
+    public void unitOwnershipLost(Unit unit) {
+        buildScheduler.unitOwnershipLost(unit);
         //To change body of implemented methods use File | Settings | File Templates.
     }
+
+	@Override
+	public int unitCreated(Unit unit, Unit builder) {
+		this.buildScheduler.unitCreated(unit, builder);
+		return 0;
+	}
 }

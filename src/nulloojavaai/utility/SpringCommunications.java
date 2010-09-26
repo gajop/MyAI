@@ -22,9 +22,28 @@ public class SpringCommunications {
     private OOAICallback clb;
     private final int DEFAULT_ZONE = 0;
     private List<SpringLogger> loggers = new LinkedList<SpringLogger>();
+    Logger errorLogger;
+    boolean errorReported = false;
+    static final String AIName = "MyUnnamedAI";
 
     public SpringCommunications(OOAICallback clb) {
         this.clb = clb;
+        errorLogger = createLogger("error");
+    }
+    /*
+     * Should only be used if an error has been detected with the AI.
+     * To report other errors, use custom loggers from @see getLogger
+     */
+    public void logError(String error) {
+    	errorLogger.severe(error);
+    	if (!errorReported) {
+    		errorReported = true;
+    		sendTextMsg("Something bad has happened with : " + AIName + 
+    				"! Please report it, and include infolog.txt from your " + 
+    				"Spring installation directory in Windows or from ~/.spring/" +     				
+    				" in linux. Also include all files from AI/Skirmish/" + AIName + 
+    				" from your Spring installation directory in Windows or ~/.spring in linux");
+    	}
     }
 
     public OOAICallback getClb() {
@@ -47,7 +66,7 @@ public class SpringCommunications {
         return handleEngineCommand(msgCmd);
     }
 
-    public Logger getLogger(String topic) {
+    private Logger createLogger(String topic) {
         for (SpringLogger logger : loggers) {
             if (logger.getTopic().equals(topic)) {
                 return logger.getLog();
@@ -58,6 +77,13 @@ public class SpringCommunications {
         SpringLogger newLogger = new SpringLogger(topic, path);
         loggers.add(newLogger);
         return newLogger.getLog();
+    }
+    
+    public Logger getLogger(String topic) {
+    	if (topic.equals("error")) {
+    		return null;
+    	}
+    	return createLogger(topic);
     }
 
     public void drawLine(AIFloat3 begin, AIFloat3 end) {

@@ -14,16 +14,11 @@ import com.springrts.ai.oo.UnitDef;
  */
 public abstract class BuildJob {
     public enum Status { ORDERED, STARTED, FINISHED, FAILED };
-    UnitDef jobUnitDef;
+    UnitDef unitToBuild;
     Unit actor;
     Status status;
     int frameOrdered;
 
-    @Override
-    public String toString() {
-        return "BuildJob{" + "jobUnitDef=" + jobUnitDef + "actor=" + actor +
-                "status=" + status + "frameOrdered=" + frameOrdered + '}';
-    }
 
     public void setActor(Unit actor) {
         this.actor = actor;
@@ -33,9 +28,6 @@ public abstract class BuildJob {
         this.frameOrdered = frameOrdered;
     }
 
-    public void setJobUnitDef(UnitDef jobUnitDef) {
-        this.jobUnitDef = jobUnitDef;
-    }
 
     public void setStatus(Status status) {
         this.status = status;
@@ -49,18 +41,69 @@ public abstract class BuildJob {
         return frameOrdered;
     }
 
-    public UnitDef getJobUnitDef() {
-        return jobUnitDef;
-    }
 
     public Status getStatus() {
         return status;
     }
 
-    public BuildJob(UnitDef jobUnitDef, Unit actor, Status status, int frameOrdered) {
-        this.jobUnitDef = jobUnitDef;
-        this.actor = actor;
-        this.status = status;
-        this.frameOrdered = frameOrdered;
-    }
+	public BuildJob(UnitDef unitToBuild, Unit actor, Status status,
+			int frameOrdered) {
+		super();
+		this.unitToBuild = unitToBuild;
+		this.actor = actor;
+		this.status = status;
+		this.frameOrdered = frameOrdered;
+	}
+
+	public UnitDef getUnitToBuild() {
+		return unitToBuild;
+	}
+
+	public void setUnitToBuild(UnitDef unitToBuild) {
+		this.unitToBuild = unitToBuild;
+	}
+
+	@Override
+	public String toString() {
+		return "BuildJob [unitToBuild=" + unitToBuild + ", actor=" + actor
+				+ ", status=" + status + ", frameOrdered=" + frameOrdered + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((actor == null) ? 0 : actor.hashCode());
+		result = prime * result + frameOrdered;
+		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		result = prime * result
+				+ ((unitToBuild == null) ? 0 : unitToBuild.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		BuildJob other = (BuildJob) obj;
+		if (actor == null) {
+			if (other.actor != null)
+				return false;
+		} else if (!actor.equals(other.actor))
+			return false;
+		if (frameOrdered != other.frameOrdered)
+			return false;
+		if (status != other.status)
+			return false;
+		if (unitToBuild == null) {
+			if (other.unitToBuild != null)
+				return false;
+		} else if (!unitToBuild.equals(other.unitToBuild))
+			return false;
+		return true;
+	}
 }

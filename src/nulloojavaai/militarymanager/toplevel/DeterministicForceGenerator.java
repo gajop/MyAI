@@ -24,7 +24,7 @@ import nulloojavaai.utility.SpringCommunications;
 public class DeterministicForceGenerator extends ForceGenerator {
     SpringCommunications spring;
     DeterministicClustering kmeans;
-    boolean drawClusters = true;
+    boolean drawClusters = false;
     
     public DeterministicForceGenerator(SpringCommunications spring,
             MilitaryManager military, ForceFactory forceFactory) {

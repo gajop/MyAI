@@ -6,8 +6,7 @@
 	MyPlayerName=gajop;
 
 	ModHash=2721138577;
-	MapHash=311717275;
-	Mapname=Altair_Crossing-V1;
+	Mapname=Comet Catcher Redux;
 	GameType=Balanced Annihilation V7.15;
 
 	startpostype=3;
@@ -56,8 +55,8 @@
 	}
 	[AI0]
 	{
-		Name=Hugh;
-		ShortName=HughAI;
+		Name=Self;
+		ShortName=NullJavaAI;
 		Version=0.1;
 		Team=0;
 		IsFromDemo=0;
@@ -68,9 +67,9 @@
 	}
 	[AI1]
 	{
-		Name=Self;
-		ShortName=MyAI;
-		Version=0.1;
+		Name=RAI;
+		ShortName=RAI;
+		Version=0.601;
 		Team=1;
 		IsFromDemo=0;
 		Host=2;
@@ -82,8 +81,8 @@
 	[TEAM0]
 	{
 		TeamLeader=2;
-		StartPosX=3755;
-		StartPosZ=2037;
+		StartPosX=496;
+		StartPosZ=1924;
 		AllyTeam=1;
 		RGBColor=0.976471 1 0;
 		Side=ARM;
@@ -92,8 +91,8 @@
 	[TEAM1]
 	{
 		TeamLeader=2;
-		StartPosX=496;
-		StartPosZ=1924;
+		StartPosX=3755;
+		StartPosZ=2037;
 		AllyTeam=0;
 		RGBColor=0.509804 0.498039 1;
 		Side=ARM;
