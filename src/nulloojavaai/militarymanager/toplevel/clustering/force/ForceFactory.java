@@ -3,9 +3,10 @@
  * and open the template in the editor.
  */
 
-package nulloojavaai.militarymanager.toplevel;
+package nulloojavaai.militarymanager.toplevel.clustering.force;
 
 import nulloojavaai.militarymanager.battlegroup.BattleGroup;
+import nulloojavaai.militarymanager.toplevel.clustering.deterministic.DeterministicCentroid;
 
 /**
  *

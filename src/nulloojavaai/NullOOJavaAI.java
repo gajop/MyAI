@@ -83,6 +83,7 @@ public class NullOOJavaAI extends AbstractOOAI implements OOAI {
 
     @Override
     public int update(int frame) {
+    	spring.update(frame);
     	try {
 	        for (Module module : modules) {
 	            module.update(frame);

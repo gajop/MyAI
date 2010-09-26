@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package nulloojavaai.militarymanager.toplevel;
+package nulloojavaai.militarymanager.toplevel.clustering.deterministic.kmeans;
 
 import com.springrts.ai.AIFloat3;
 import com.springrts.ai.oo.Unit;
@@ -11,9 +11,12 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 import javax.vecmath.Vector3f;
+
+import nulloojavaai.militarymanager.toplevel.clustering.deterministic.DeterministicCentroid;
+import nulloojavaai.militarymanager.toplevel.clustering.deterministic.DeterministicClustering;
+import nulloojavaai.militarymanager.toplevel.clustering.deterministic.DeterministicClusteringResult;
 
 /**
  *
@@ -38,7 +41,7 @@ public abstract class KMeans implements DeterministicClustering {
 	    do {
 	        totalError = 0;
 	        for (DeterministicCentroid centroid : centroids) {
-	            centroid.assignments.clear();
+	            centroid.getAssignments().clear();
 	        }
 	        for (Unit unit : units) { //assign clusters
 	    double closestDistance = Double.MAX_VALUE;
@@ -60,15 +63,15 @@ public abstract class KMeans implements DeterministicClustering {
 	}
 	
 	for (DeterministicCentroid centroid : centroids) { //move centroids
-	        if (centroid.assignments.isEmpty()) {
-	            centroid.center = units.get(random.nextInt(units.size())).getPos();
+	        if (centroid.getAssignments().isEmpty()) {
+	            centroid.setCenter(units.get(random.nextInt(units.size())).getPos());
 	            continue;
 	        }
 	        Vector3f center = new Vector3f(0, 0, 0);
-	        for (Unit unit : centroid.assignments) {
+	        for (Unit unit : centroid.getAssignments()) {
 	            center.add(unit.getPos().toVector3f());
 	        }
-	        center.scale(1.0f / centroid.assignments.size());
+	        center.scale(1.0f / centroid.getAssignments().size());
 	        if (!center.equals(centroid.getCenter().toVector3f())) {
 	            Vector3f tmp = new Vector3f(center);
 	            tmp.negate();

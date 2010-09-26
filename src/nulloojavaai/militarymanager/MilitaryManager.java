@@ -17,6 +17,7 @@ import nulloojavaai.Module;
 import nulloojavaai.militarymanager.battlegroup.BattleGroup;
 import nulloojavaai.militarymanager.battlegroup.BattleGroupPlanner;
 import nulloojavaai.militarymanager.battlegroup.BattleGroupScheduler;
+import nulloojavaai.militarymanager.battlegroup.BattleGroups;
 import nulloojavaai.militarymanager.battlegroup.SimpleBattleGroupPlanner;
 import nulloojavaai.militarymanager.battlegroup.SimpleBattleGroupScheduler;
 import nulloojavaai.unitmanager.UnitManager;
@@ -29,12 +30,13 @@ import nulloojavaai.utility.SpringCommunications;
  * @author gajop
  */
 public class MilitaryManager extends Module implements UnitManagerListener {
-    LinkedList<BattleGroup> battleGroups = new LinkedList<BattleGroup>();
+    //LinkedList<BattleGroup> battleGroups = new LinkedList<BattleGroup>();
+    BattleGroups battleGroups = new BattleGroups();
     SpringCommunications spring;
     UnitManager unitManager;
     TopLevelPlanner topLevelPlanner;
 
-    public LinkedList<BattleGroup> getBattleGroups() {
+    public BattleGroups getBattleGroups() {
         return battleGroups;
     }
 
@@ -49,7 +51,7 @@ public class MilitaryManager extends Module implements UnitManagerListener {
     		topLevelPlanner.update(frame);
     	}
         if (frame % 50 == 0) { //do stuff on a battlegroup level
-        	for (BattleGroup battleGroup : battleGroups) {            
+        	for (BattleGroup battleGroup : battleGroups.getBattleGroups()) {            
             	BattleGroupPlanner bgPlanner = new SimpleBattleGroupPlanner(spring, battleGroup);
             	BattleGroupScheduler bgScheduler = new SimpleBattleGroupScheduler(spring);
             	bgScheduler.execute(bgPlanner.plan());
@@ -66,7 +68,7 @@ public class MilitaryManager extends Module implements UnitManagerListener {
     	boolean isJeffy = unitDef.getName().equals("armfav");
         if (isFlash || isJeffy) {
             BattleGroup selected = null;
-            for (BattleGroup battleGroup : battleGroups) {            	
+            for (BattleGroup battleGroup : battleGroups.getBattleGroups()) {            	
                 if (!battleGroup.isSent()) {
                 	for (Unit bgUnit : battleGroup.getUnits()) {
                 		 if (unitDef.equals(bgUnit.getDef())) {
@@ -77,11 +79,11 @@ public class MilitaryManager extends Module implements UnitManagerListener {
                 }
             }
             if (selected != null) {
-                selected.addUnit(unit);
+            	battleGroups.addUnit(unit, selected);
             } else {
             	BattleGroup battleGroup = new BattleGroup();
-            	battleGroup.addUnit(unit);
-                battleGroups.add(battleGroup);
+            	battleGroups.addBattleGroup(battleGroup);
+            	battleGroups.addUnit(unit, battleGroup);
             }
         }
         return 0;
@@ -89,13 +91,7 @@ public class MilitaryManager extends Module implements UnitManagerListener {
 
     @Override
     public int unitDestroyed(Unit unit, Unit attacker) {
-    	for (Iterator<BattleGroup> bgIter = battleGroups.iterator(); bgIter.hasNext();) {
-    		BattleGroup battleGroup = bgIter.next();
-		    battleGroup.getUnits().remove(unit);
-		    if (battleGroup.getUnits().isEmpty()) {
-		    	bgIter.remove();
-		    }
-    	}        
+    	battleGroups.removeUnit(unit);    	       
         return 0; // signaling: OK
     }
 

@@ -25,6 +25,11 @@ public class SpringCommunications {
     Logger errorLogger;
     boolean errorReported = false;
     static final String AIName = "MyUnnamedAI";
+    final String errorReport = "Something bad has happened with : " + AIName + 
+		"! Please report it, and include infolog.txt from your " + 
+		"Spring installation directory in Windows or from ~/.spring/" +     				
+		" in linux. Also include all files from AI/Skirmish/" + AIName + 
+		" from your Spring installation directory in Windows or ~/.spring in linux";
 
     public SpringCommunications(OOAICallback clb) {
         this.clb = clb;
@@ -38,11 +43,7 @@ public class SpringCommunications {
     	errorLogger.severe(error);
     	if (!errorReported) {
     		errorReported = true;
-    		sendTextMsg("Something bad has happened with : " + AIName + 
-    				"! Please report it, and include infolog.txt from your " + 
-    				"Spring installation directory in Windows or from ~/.spring/" +     				
-    				" in linux. Also include all files from AI/Skirmish/" + AIName + 
-    				" from your Spring installation directory in Windows or ~/.spring in linux");
+    		sendTextMsg(errorReport);
     	}
     }
 
@@ -91,4 +92,9 @@ public class SpringCommunications {
                             end, 10, false, 42, 0, 42);
         handleEngineCommand(drawCommand);
     }
+	public void update(int frame) { 
+		if (errorReported && frame == 1000) { //retransmits the error report a bit later in the game, since early error reports might be missed
+			sendTextMsg(errorReport);
+		}
+	}
 }

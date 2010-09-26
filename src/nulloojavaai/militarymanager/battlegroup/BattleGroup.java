@@ -7,6 +7,7 @@ package nulloojavaai.militarymanager.battlegroup;
 
 import com.springrts.ai.oo.Unit;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,6 +23,7 @@ public class BattleGroup {
     Set<Unit> units = new HashSet<Unit>();
     boolean sent = false;
     BattleGroupOrder order = new IdleBattleGroupOrder(this);
+    int id;
 
     public boolean isSent() {
         return sent;
@@ -35,11 +37,11 @@ public class BattleGroup {
         this.sent = sent;
     }
 
-    public void addUnit(Unit unit) {
+    void addUnit(Unit unit) {
         units.add(unit);
     }
     
-    public void removeUnit(Unit unit) {
+    void removeUnit(Unit unit) {
     	units.remove(unit);
     }
 
@@ -52,21 +54,12 @@ public class BattleGroup {
             return false;
         }
         final BattleGroup other = (BattleGroup) obj;
-        if (this.units != other.units && (this.units == null || !this.units.equals(other.units))) {
-            return false;
-        }
-        if (this.sent != other.sent) {
-            return false;
-        }
-        return true;
+        return this.id == other.id;
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 41 * hash + (this.units != null ? this.units.hashCode() : 0);
-        hash = 41 * hash + (this.sent ? 1 : 0);
-        return hash;
+        return id;
     }
 
 	public BattleGroupOrder getOrder() {
@@ -75,5 +68,13 @@ public class BattleGroup {
 
 	public void setOrder(BattleGroupOrder order) {
 		this.order = order;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	void setId(int id) {
+		this.id = id;
 	}
 }

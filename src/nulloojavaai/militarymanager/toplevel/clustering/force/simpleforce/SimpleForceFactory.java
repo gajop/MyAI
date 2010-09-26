@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package nulloojavaai.militarymanager.toplevel.simpleforce;
+package nulloojavaai.militarymanager.toplevel.clustering.force.simpleforce;
 
 import com.springrts.ai.oo.Resource;
 import com.springrts.ai.oo.Unit;
@@ -14,9 +14,9 @@ import java.util.Collection;
 import java.util.logging.Logger;
 
 import nulloojavaai.militarymanager.battlegroup.BattleGroup;
-import nulloojavaai.militarymanager.toplevel.DeterministicCentroid;
-import nulloojavaai.militarymanager.toplevel.Force;
-import nulloojavaai.militarymanager.toplevel.ForceFactory;
+import nulloojavaai.militarymanager.toplevel.clustering.deterministic.DeterministicCentroid;
+import nulloojavaai.militarymanager.toplevel.clustering.force.Force;
+import nulloojavaai.militarymanager.toplevel.clustering.force.ForceFactory;
 import nulloojavaai.utility.SpringCommunications;
 
 /**

@@ -1,31 +1,41 @@
 package nulloojavaai.militarymanager.toplevel;
 
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import com.springrts.ai.AIFloat3;
 import com.springrts.ai.oo.Unit;
 
 import nulloojavaai.militarymanager.MilitaryManager;
 import nulloojavaai.militarymanager.battlegroup.BattleGroup;
+import nulloojavaai.militarymanager.battlegroup.BattleGroupListener;
+import nulloojavaai.militarymanager.toplevel.clustering.deterministic.DeterministicForceGenerator;
+import nulloojavaai.militarymanager.toplevel.clustering.deterministic.kmeans.MinDistanceBasedKMeansWrapper;
+import nulloojavaai.militarymanager.toplevel.clustering.force.Force;
+import nulloojavaai.militarymanager.toplevel.clustering.force.simpleforce.SimpleForce;
+import nulloojavaai.militarymanager.toplevel.clustering.force.simpleforce.SimpleForceFactory;
 import nulloojavaai.militarymanager.toplevel.orders.MoveBattleGroupOrder;
-import nulloojavaai.militarymanager.toplevel.simpleforce.SimpleForce;
-import nulloojavaai.militarymanager.toplevel.simpleforce.SimpleForceFactory;
 import nulloojavaai.utility.SpringCommunications;
 import nulloojavaai.utility.VectorUtil;
 
-public class TopLevelPlanner {
+public class TopLevelPlanner implements BattleGroupListener {
 	SpringCommunications spring;
 	MilitaryManager militaryManager;
     DeterministicForceGenerator forceGenerator;
+    List<Force> myForces = new LinkedList<Force>(); //simplified look on owned battlegroups 
 	
 	public TopLevelPlanner(SpringCommunications spring,
 			MilitaryManager militaryManager) {
 		super();
 		this.spring = spring;
 		this.militaryManager = militaryManager;
+		this.militaryManager.getBattleGroups().registerListener(this);
         this.forceGenerator = new DeterministicForceGenerator(spring, 
-        		militaryManager, new SimpleForceFactory(spring));
+        		militaryManager, new SimpleForceFactory(spring),
+        		new MinDistanceBasedKMeansWrapper(400));
 	}
 
 	public void update(int frame) {
@@ -34,11 +44,18 @@ public class TopLevelPlanner {
 	}
 	
 	void combineBattleGroups() {
-		List<BattleGroup> battleGroups = militaryManager.getBattleGroups();
+		Set<BattleGroup> battleGroups = militaryManager.getBattleGroups().getBattleGroups();
+		Set<BattleGroup> toRemove = new HashSet<BattleGroup>();
 		for (Iterator<BattleGroup> i = battleGroups.iterator(); i.hasNext();) {
-			BattleGroup first = i.next();			
+			BattleGroup first = i.next();
+			if (toRemove.contains(first)) {
+				continue;
+			}
 			for (Iterator<BattleGroup> j = i; j.hasNext();) {
 				BattleGroup second = j.next();
+				if (toRemove.contains(second)) {
+					continue;
+				}
 				if (first.equals(second) || first.getUnits().isEmpty() || second.getUnits().isEmpty()) {
 					continue;
 				}
@@ -57,9 +74,9 @@ public class TopLevelPlanner {
 					}
 					if (same) {
 						for (Unit unit : second.getUnits()) {
-							first.addUnit(unit);
+							militaryManager.getBattleGroups().addUnit(unit, first);
 						}
-						j.remove();	
+						toRemove.add(second);	
 					}
 				}				
 			}			
@@ -67,8 +84,8 @@ public class TopLevelPlanner {
 	}
 	
 	void battleGroupOrderAssignments() {
-		List<Force> forces = forceGenerator.generateForces();
-        for (BattleGroup battleGroup : militaryManager.getBattleGroups()) {
+		List<Force> enemyForces = forceGenerator.generateEnemyForces();
+        for (BattleGroup battleGroup : militaryManager.getBattleGroups().getBattleGroups()) {
             if (!battleGroup.getUnits().isEmpty()) {
             	boolean isFlash = false;
                 for (Unit unit : battleGroup.getUnits()) {
@@ -86,11 +103,8 @@ public class TopLevelPlanner {
                 	if (battleGroup.getUnits().size() < 20) {
 		                AIFloat3 closest = null;
 		                double closestDistance = Double.POSITIVE_INFINITY;
-		                for (Force force : forces) {
-		                    SimpleForce simpleForce = (SimpleForce) force;
-		                    if (simpleForce.getOwner() == spring.getClb().getTeamId()) {
-		                        continue;
-		                    }
+		                for (Force enemyForce : enemyForces) {
+		                    SimpleForce simpleForce = (SimpleForce) enemyForce;
 		                    AIFloat3 position = simpleForce.getOriginalPosition();
 		                    double distance = VectorUtil.distance(position, center);
 		                    if (distance < closestDistance) {
@@ -109,11 +123,8 @@ public class TopLevelPlanner {
                 		AIFloat3 best = null;
                 		AIFloat3 closest = null;
                 		double closestDistance = Double.POSITIVE_INFINITY;
-                		for (Force force : forces) {
-                			SimpleForce simpleForce = (SimpleForce) force;
-		                    if (simpleForce.getOwner() == spring.getClb().getTeamId()) {
-		                        continue;
-		                    }
+                		for (Force enemyForce : enemyForces) {
+                			SimpleForce simpleForce = (SimpleForce) enemyForce;
 		                    AIFloat3 position = simpleForce.getOriginalPosition();
 		                    double distance = VectorUtil.distance(position, center);
 		                    double value = simpleForce.getValue();
@@ -140,8 +151,8 @@ public class TopLevelPlanner {
                 	AIFloat3 best = null;
                 	double bestEstimate = Double.NEGATIVE_INFINITY;
                 	double bestDistance = 0;
-                	for (Force force : forces) {
-                		SimpleForce simpleForce = (SimpleForce) force;
+                	for (Force enemyForce: enemyForces) {
+                		SimpleForce simpleForce = (SimpleForce) enemyForce;
                 		if (simpleForce.getOwner() == spring.getClb().getTeamId()) {
 	                        continue;
 	                    }                		
@@ -187,5 +198,35 @@ public class TopLevelPlanner {
 
 	public void setForceGenerator(DeterministicForceGenerator forceGenerator) {
 		this.forceGenerator = forceGenerator;
+	}
+
+	@Override
+	public void battleGroupAdded(BattleGroup battleGroup) {
+		Force newForce = this.forceGenerator.getForceFactory().generate(battleGroup);
+		myForces.add(newForce);
+	}
+
+	@Override
+	public void battleGroupRemoved(BattleGroup battleGroup) {
+		for (Iterator<Force> i = myForces.iterator(); i.hasNext();) {
+			Force force = i.next();
+			if (force.getOriginalBattleGroup().equals(battleGroup)) {
+				i.remove();
+				break;
+			}
+		}
+	}
+
+	@Override
+	public void battleGroupChanged(BattleGroup battleGroup) {
+		for (Iterator<Force> i = myForces.iterator(); i.hasNext();) {
+			Force force = i.next();
+			if (force.getOriginalBattleGroup().equals(battleGroup)) {
+				i.remove();
+				break;
+			}
+		}
+		Force newForce = this.forceGenerator.getForceFactory().generate(battleGroup);
+		myForces.add(newForce);
 	}
 }

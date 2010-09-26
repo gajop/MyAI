@@ -3,12 +3,12 @@
  * and open the template in the editor.
  */
 
-package nulloojavaai.militarymanager.toplevel.simpleforce;
+package nulloojavaai.militarymanager.toplevel.clustering.force.simpleforce;
 
 import com.springrts.ai.AIFloat3;
 
 import nulloojavaai.militarymanager.battlegroup.BattleGroup;
-import nulloojavaai.militarymanager.toplevel.Force;
+import nulloojavaai.militarymanager.toplevel.clustering.force.Force;
 import nulloojavaai.utility.SpringCommunications;
 
 /**

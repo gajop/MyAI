@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package nulloojavaai.militarymanager.toplevel;
+package nulloojavaai.militarymanager.toplevel.clustering.deterministic.kmeans;
 
 import com.springrts.ai.AIFloat3;
 import com.springrts.ai.oo.Unit;
@@ -14,6 +14,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import nulloojavaai.militarymanager.toplevel.clustering.deterministic.DeterministicCentroid;
+import nulloojavaai.militarymanager.toplevel.clustering.deterministic.DeterministicClustering;
+import nulloojavaai.militarymanager.toplevel.clustering.deterministic.DeterministicClusteringResult;
 import nulloojavaai.utility.VectorUtil;
 
 /**
@@ -43,13 +46,13 @@ public class KMeansWrapper implements DeterministicClustering {
             	result = KMeans.cluster(k, units);	
             }       
              
-            for (Iterator<DeterministicCentroid> i = result.centroids.iterator(); i.hasNext(); ) { //remove empty clusters
+            for (Iterator<DeterministicCentroid> i = result.getCentroids().iterator(); i.hasNext(); ) { //remove empty clusters
             	DeterministicCentroid centroid = i.next();
             	if (centroid.getAssignments().isEmpty()) {
             		i.remove();
             	}
             }
-            int realK = result.centroids.size();
+            int realK = result.getCentroids().size();
             double MIN_CLUSTER_DISTANCE = 200;
             boolean failed = false;
             for (DeterministicCentroid first : result.getCentroids()) {
@@ -97,7 +100,7 @@ public class KMeansWrapper implements DeterministicClustering {
 
     private double intraClusterDistance(DeterministicClusteringResult result) {
         double averageMinIntraClusterDistance = 0;
-        if (!result.centroids.isEmpty()) {
+        if (!result.getCentroids().isEmpty()) {
             for (DeterministicCentroid first : result.getCentroids()) {
                 double minIntraClusterDistance = Double.MAX_VALUE;
                 for (DeterministicCentroid second : result.getCentroids()) {
@@ -111,7 +114,7 @@ public class KMeansWrapper implements DeterministicClustering {
                 }
                 averageMinIntraClusterDistance += minIntraClusterDistance;
             }
-            averageMinIntraClusterDistance /= result.centroids.size();
+            averageMinIntraClusterDistance /= result.getCentroids().size();
         }
         return averageMinIntraClusterDistance;
     }

@@ -308,7 +308,9 @@ public class BuildScheduler {
 				break;
 			}
 		}
-		matchingJob.setStatus(BuildJob.Status.STARTED);
+		if (matchingJob != null) {
+			matchingJob.setStatus(BuildJob.Status.STARTED);
+		}
 		connectedBuildJob.put(unit, matchingJob);
 	}
 }

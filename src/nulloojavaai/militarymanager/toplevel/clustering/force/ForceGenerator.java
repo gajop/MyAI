@@ -3,7 +3,9 @@
  * and open the template in the editor.
  */
 
-package nulloojavaai.militarymanager.toplevel;
+package nulloojavaai.militarymanager.toplevel.clustering.force;
+
+import java.util.List;
 
 import nulloojavaai.militarymanager.MilitaryManager;
 
@@ -35,6 +37,8 @@ public abstract class ForceGenerator {
         this.militaryManager = military;
         this.forceFactory = forceFactory;
     }
+    
+    public abstract List<Force> generateEnemyForces();
 
     @Override
     public boolean equals(Object obj) {

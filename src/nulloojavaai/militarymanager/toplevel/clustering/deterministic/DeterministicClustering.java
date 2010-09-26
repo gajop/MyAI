@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package nulloojavaai.militarymanager.toplevel;
+package nulloojavaai.militarymanager.toplevel.clustering.deterministic;
 
 import com.springrts.ai.oo.Unit;
 import java.util.List;

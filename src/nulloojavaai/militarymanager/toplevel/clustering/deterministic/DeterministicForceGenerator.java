@@ -3,11 +3,8 @@
  * and open the template in the editor.
  */
 
-package nulloojavaai.militarymanager.toplevel;
+package nulloojavaai.militarymanager.toplevel.clustering.deterministic;
 
-import com.springrts.ai.AICommand;
-import com.springrts.ai.command.AddPointDrawAICommand;
-import com.springrts.ai.command.CreateLineFigureDrawerAICommand;
 import com.springrts.ai.command.DeleteFigureDrawerAICommand;
 import com.springrts.ai.oo.Unit;
 import java.util.LinkedList;
@@ -15,6 +12,9 @@ import java.util.List;
 
 import nulloojavaai.militarymanager.MilitaryManager;
 import nulloojavaai.militarymanager.battlegroup.BattleGroup;
+import nulloojavaai.militarymanager.toplevel.clustering.force.Force;
+import nulloojavaai.militarymanager.toplevel.clustering.force.ForceFactory;
+import nulloojavaai.militarymanager.toplevel.clustering.force.ForceGenerator;
 import nulloojavaai.utility.SpringCommunications;
 
 /**
@@ -23,26 +23,27 @@ import nulloojavaai.utility.SpringCommunications;
  */
 public class DeterministicForceGenerator extends ForceGenerator {
     SpringCommunications spring;
-    DeterministicClustering kmeans;
+    DeterministicClustering clustering;
     boolean drawClusters = false;
     
     public DeterministicForceGenerator(SpringCommunications spring,
-            MilitaryManager military, ForceFactory forceFactory) {
+            MilitaryManager military, ForceFactory forceFactory,
+            DeterministicClustering clustering) {
         super(military, forceFactory);
         this.spring = spring;
-        this.kmeans =  new MinDistanceBasedKMeansWrapper(400);
+        this.clustering = clustering;
     }
 
-    public List<Force> generateForces() {
-        List<Force> forces = new LinkedList<Force>();
-        for (BattleGroup battleGroup : this.militaryManager.getBattleGroups()) {
-            forces.add(forceFactory.generate(battleGroup));
-        }
+    /*
+     * Generate enemy forces from currently visible or assumed enemy units
+     */
+    public List<Force> generateEnemyForces() {
+        List<Force> forces = new LinkedList<Force>();        
         List<Unit> enemyUnits = spring.getClb().getEnemyUnits();
         if (!enemyUnits.isEmpty()) {            
-            DeterministicClusteringResult result = kmeans.cluster(enemyUnits);
+            DeterministicClusteringResult result = clustering.cluster(enemyUnits);
             for (DeterministicCentroid centroid : result.getCentroids()) {
-                forces.add(forceFactory.generate(centroid));
+                forces.add(this.getForceFactory().generate(centroid));
             }
 
             if (drawClusters) {
