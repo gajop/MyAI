@@ -147,7 +147,7 @@ public class BuildManager extends Module implements UnitManagerListener {
                     AIFloat3 position;
                     if (!currentUnitDef.equals(mex)) {
                     	position = this.buildScheduler.findClosestBuildSite(currentUnitDef,
-                                this.commander.getPos(), 300);
+                                this.commander.getPos(), 3000);
                         /*position = spring.getClb().getMap().findClosestBuildSite(currentUnitDef,
                                 this.commander.getPos(), 300, 8, buildScheduler.getFacing());*/
                     } else {
@@ -190,7 +190,7 @@ public class BuildManager extends Module implements UnitManagerListener {
 		                }                    
 		                if (eCurrent < eMax / 4) { //25% total energy, need more
 		                    if (buildScheduler.canBuild(solarPlant, builder)) {
-		                    	AIFloat3 position = buildScheduler.findClosestBuildSite(solarPlant, this.commander.getPos(), 300);
+		                    	AIFloat3 position = buildScheduler.findClosestBuildSite(solarPlant, this.commander.getPos(), 3000);
 		                      /*  AIFloat3 position = spring.getClb().
 		                                getMap().findClosestBuildSite(solarPlant,
 		                                this.commander.getPos(), 300, 8, this.buildScheduler.getFacing());*/
@@ -219,7 +219,7 @@ public class BuildManager extends Module implements UnitManagerListener {
 		                } else if (mCurrent > mMax / 2) {
 		                    if (buildScheduler.canBuild(nano, builder)) {
 		                       /* AIFloat3 position = spring.getClb().getMap().findClosestBuildSite(nano, vehPlant.getPos(), 300, 8, this.buildScheduler.getFacing());*/
-		                        AIFloat3 position = this.buildScheduler.findClosestBuildSite(nano, vehPlant.getPos(), 300);
+		                        AIFloat3 position = this.buildScheduler.findClosestBuildSite(nano, vehPlant.getPos(), 3000);
 		                        if (buildScheduler.canBuild(nano, builder, position)) {
 		                            boolean ownershipGranted = unitManager.requestUnit(builder, this);
 		                            if (ownershipGranted) {

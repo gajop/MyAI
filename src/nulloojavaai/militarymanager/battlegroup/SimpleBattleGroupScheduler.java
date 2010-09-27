@@ -3,8 +3,10 @@ package nulloojavaai.militarymanager.battlegroup;
 import java.util.ArrayList;
 
 import com.springrts.ai.AICommand;
+import com.springrts.ai.command.AttackUnitAICommand;
 import com.springrts.ai.command.MoveUnitAICommand;
 
+import nulloojavaai.militarymanager.battlegroup.orders.AttackUnitOrder;
 import nulloojavaai.militarymanager.battlegroup.orders.MoveUnitOrder;
 import nulloojavaai.militarymanager.battlegroup.orders.UnitOrder;
 import nulloojavaai.utility.SpringCommunications;
@@ -15,12 +17,17 @@ public class SimpleBattleGroupScheduler extends BattleGroupScheduler {
 
 	@Override
 	public void execute(BattleGroupPlan plan) {
-		for (UnitOrder unitOrder : plan.getPlan()) {
-			MoveUnitOrder moveOrder = (MoveUnitOrder) unitOrder;
-			if (unitOrder.getOrderType().equals(UnitOrder.OrderType.MOVE)) {
+		for (UnitOrder unitOrder : plan.getPlan()) {		
+			if (unitOrder instanceof MoveUnitOrder) {
+				MoveUnitOrder moveOrder = (MoveUnitOrder) unitOrder;
                 MoveUnitAICommand command = new MoveUnitAICommand(moveOrder.getActor(), -1,
                         new ArrayList<AICommand.Option>(), 10000, moveOrder.getDestination());
                 spring.handleEngineCommand(command);
+			} else if (unitOrder instanceof AttackUnitOrder) { //pray the unit exists, haven't found a way to check that yet
+				AttackUnitOrder attackOrder = (AttackUnitOrder) unitOrder;
+				AttackUnitAICommand command = new AttackUnitAICommand(attackOrder.getActor(), -1,
+						new ArrayList<AICommand.Option>(), 10000, attackOrder.getTarget());
+				spring.handleEngineCommand(command);
 			}
 		}
 	}

@@ -17,6 +17,7 @@ import nulloojavaai.militarymanager.toplevel.clustering.deterministic.kmeans.Min
 import nulloojavaai.militarymanager.toplevel.clustering.force.Force;
 import nulloojavaai.militarymanager.toplevel.clustering.force.simpleforce.SimpleForce;
 import nulloojavaai.militarymanager.toplevel.clustering.force.simpleforce.SimpleForceFactory;
+import nulloojavaai.militarymanager.toplevel.orders.AttackForceBattleGroupOrder;
 import nulloojavaai.militarymanager.toplevel.orders.MoveBattleGroupOrder;
 import nulloojavaai.utility.SpringCommunications;
 import nulloojavaai.utility.VectorUtil;
@@ -85,8 +86,9 @@ public class TopLevelPlanner implements BattleGroupListener {
 	
 	void battleGroupOrderAssignments() {
 		List<Force> enemyForces = forceGenerator.generateEnemyForces();
-        for (BattleGroup battleGroup : militaryManager.getBattleGroups().getBattleGroups()) {
-            if (!battleGroup.getUnits().isEmpty()) {
+        for (Force myForce: myForces) {
+        	BattleGroup battleGroup = myForce.getOriginalBattleGroup();
+            if (!myForce.getOriginalBattleGroup().getUnits().isEmpty()) {
             	boolean isFlash = false;
                 for (Unit unit : battleGroup.getUnits()) {
                 	if (unit == null || unit.getDef() == null) {
@@ -99,29 +101,29 @@ public class TopLevelPlanner implements BattleGroupListener {
                 }
                 AIFloat3 center = VectorUtil.averageFromUnits(battleGroup.getUnits());
                 if (isFlash) {
-                	double DISTANCE_OF_ENGAGEMENT = 1000;  
+                	double DISTANCE_OF_ENGAGEMENT = 1500;  
                 	if (battleGroup.getUnits().size() < 20) {
-		                AIFloat3 closest = null;
+		                Force closest = null;
 		                double closestDistance = Double.POSITIVE_INFINITY;
 		                for (Force enemyForce : enemyForces) {
 		                    SimpleForce simpleForce = (SimpleForce) enemyForce;
 		                    AIFloat3 position = simpleForce.getOriginalPosition();
 		                    double distance = VectorUtil.distance(position, center);
 		                    if (distance < closestDistance) {
-		                        closest = position;
+		                        closest = simpleForce;
 		                        closestDistance = distance;
 		                    }
 		                }
 		                if (closest != null) {		                                      
 		                    if (closestDistance < DISTANCE_OF_ENGAGEMENT || battleGroup.getUnits().size() > 4 || battleGroup.isSent()) {
-		                    	battleGroup.setOrder(new MoveBattleGroupOrder(battleGroup, closest));	
+		                    	battleGroup.setOrder(new AttackForceBattleGroupOrder(battleGroup, closest));	
 		                    	battleGroup.setSent(true);
 		                    }
 		                }
                 	} else {
                 		double highestValue = Double.NEGATIVE_INFINITY;
-                		AIFloat3 best = null;
-                		AIFloat3 closest = null;
+                		Force best = null;
+                		Force closest = null;
                 		double closestDistance = Double.POSITIVE_INFINITY;
                 		for (Force enemyForce : enemyForces) {
                 			SimpleForce simpleForce = (SimpleForce) enemyForce;
@@ -129,26 +131,26 @@ public class TopLevelPlanner implements BattleGroupListener {
 		                    double distance = VectorUtil.distance(position, center);
 		                    double value = simpleForce.getValue();
 		                    if (value > highestValue) {
-		                    	best = position;
+		                    	best = simpleForce;
 		                    	highestValue = value;
 		                    } 
 		                    if (distance < closestDistance) {
-		                        closest = position;
+		                        closest = simpleForce;
 		                        closestDistance = distance;
 		                    }
                 		}
                 		if (closest != null) {
 	                		if (closestDistance < DISTANCE_OF_ENGAGEMENT) {
-	                			battleGroup.setOrder(new MoveBattleGroupOrder(battleGroup, closest));	
+	                			battleGroup.setOrder(new AttackForceBattleGroupOrder(battleGroup, closest));	
 		                    	battleGroup.setSent(true);
 	                		} else {
-	                			battleGroup.setOrder(new MoveBattleGroupOrder(battleGroup, best));	
+	                			battleGroup.setOrder(new AttackForceBattleGroupOrder(battleGroup, best));	
 		                    	battleGroup.setSent(true);
 	                		}
                 		}
                 	}
                 } else {
-                	AIFloat3 best = null;
+                	Force best = null;
                 	double bestEstimate = Double.NEGATIVE_INFINITY;
                 	double bestDistance = 0;
                 	for (Force enemyForce: enemyForces) {
@@ -162,12 +164,12 @@ public class TopLevelPlanner implements BattleGroupListener {
                 		if (estimate > bestEstimate || best == null || (strength == 0 && distance < bestDistance)) {
                 			bestDistance = distance;
                 			bestEstimate = estimate;
-                			best = simpleForce.getOriginalPosition();
+                			best = simpleForce;
                 		}
                 	}
                 	if (best != null) {
                 		if (battleGroup.getUnits().size() >= 1 || battleGroup.isSent()) {
-	                		battleGroup.setOrder(new MoveBattleGroupOrder(battleGroup, best));
+	                		battleGroup.setOrder(new AttackForceBattleGroupOrder(battleGroup, best));
 	                		battleGroup.setSent(true);
                 		}
                 	}

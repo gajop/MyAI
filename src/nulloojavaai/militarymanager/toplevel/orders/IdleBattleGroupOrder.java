@@ -14,7 +14,7 @@ import nulloojavaai.militarymanager.battlegroup.BattleGroup;
 public class IdleBattleGroupOrder extends BattleGroupOrder {
 
     public IdleBattleGroupOrder(BattleGroup actor) {
-        super(actor, BattleGroupOrder.OrderType.IDLE);
+        super(actor);
     }
 
 }

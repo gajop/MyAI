@@ -18,7 +18,7 @@ public class MoveBattleGroupOrder extends BattleGroupOrder {
     AIFloat3 destination;
 
     public MoveBattleGroupOrder(BattleGroup actor, AIFloat3 destination) {
-        super(actor, BattleGroupOrder.OrderType.MOVE);
+        super(actor);
         this.destination = destination;
     }
 

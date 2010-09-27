@@ -12,13 +12,10 @@ import nulloojavaai.militarymanager.battlegroup.BattleGroup;
  * @author gajop
  */
 public abstract class BattleGroupOrder {
-	public enum OrderType { MOVE, IDLE};
-	OrderType orderType;
     BattleGroup actor;
 
-    public BattleGroupOrder(BattleGroup actor, OrderType orderType) {
+    public BattleGroupOrder(BattleGroup actor) {
         this.actor = actor;
-        this.orderType = orderType;
     }
 
     public BattleGroup getActor() {
@@ -27,14 +24,5 @@ public abstract class BattleGroupOrder {
 
     public void setActor(BattleGroup actor) {
         this.actor = actor;
-    } 
-
-	public OrderType getOrderType() {
-		return orderType;
-	}
-
-	public void setOrderType(OrderType orderType) {
-		this.orderType = orderType;
-	}
-
+    }
 }

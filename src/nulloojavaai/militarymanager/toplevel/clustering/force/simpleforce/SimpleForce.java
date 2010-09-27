@@ -20,41 +20,50 @@ public class SimpleForce extends Force {
     public enum Type { NORMAL, BUILDINGS, WORKERS };
     double hp;
     double dpf;
-    double speed;
+    double maxSpeed;
     double value;
     double range;
     int owner; //should be a Player object imo
     SpringCommunications spring;
+    AIFloat3 velocity;
 
-    public SimpleForce(SpringCommunications spring, AIFloat3 originalPosition,
-            double hp, double dpf, double speed, double value, double range, int owner) {
-        super(originalPosition);
+    public SimpleForce(SpringCommunications spring, AIFloat3 originalPosition, int frameCreated, 
+            double hp, double dpf, double maxSpeed, double value, double range, int owner, AIFloat3 velocity) {
+        super(originalPosition, frameCreated);
         this.spring = spring;
         this.owner = 1;
         this.hp = hp;
         this.dpf = dpf;
-        this.speed = speed;
+        this.maxSpeed = maxSpeed;
         this.value = value;
         this.range = range;
         this.owner = owner;
+        this.velocity = velocity;
     }
 
     public SimpleForce(SpringCommunications spring, BattleGroup originalBattleGroup,
-            double hp, double dpf, double speed, double value, double range) {
-        super(originalBattleGroup);
+    		int frameCreated, double hp, double dpf, double maxSpeed, double value, double range, AIFloat3 velocity) {
+        super(originalBattleGroup, frameCreated);
         this.spring = spring;
         this.owner = spring.getClb().getTeamId();
         this.hp = hp;
         this.dpf = dpf;
-        this.speed = speed;
+        this.maxSpeed = maxSpeed;
         this.value = value;
         this.range = range;
+        this.velocity = velocity;
     }
 
-    public SimpleForce(SpringCommunications spring, AIFloat3 originalPosition, int owner) {
-        super(originalPosition);
+    public SimpleForce(SpringCommunications spring, AIFloat3 originalPosition, int frameCreated, int owner) {
+        super(originalPosition, frameCreated);
         this.spring = spring;
         this.owner = owner;
+    }
+    
+    public SimpleForce(SpringCommunications spring, int frameCreated, BattleGroup originalBattleGroup) {
+        super(originalBattleGroup, frameCreated);
+        this.spring = spring;
+        this.owner = spring.getClb().getTeamId();
     }
 
     public void setOwner(int owner) {
@@ -65,15 +74,11 @@ public class SimpleForce extends Force {
         return owner;
     }
 
-    public SimpleForce(SpringCommunications spring, BattleGroup originalBattleGroup) {
-        super(originalBattleGroup);
-        this.spring = spring;
-        this.owner = spring.getClb().getTeamId();
-    }
+
 
     @Override
     public String toString() {
-        return "SimpleForce{" + "hp=" + hp + "dpf=" + dpf + "speed=" + speed + "value=" + value + "range=" + range + "owner=" + owner + '}';
+        return "SimpleForce{" + "hp=" + hp + "dpf=" + dpf + "maxSpeed=" + maxSpeed + "value=" + value + "range=" + range + "owner=" + owner + '}';
     }
 
     public void setRange(double range) {
@@ -92,8 +97,8 @@ public class SimpleForce extends Force {
         this.hp = hp;
     }
 
-    public void setSpeed(double speed) {
-        this.speed = speed;
+    public void setMaxSpeed(double maxSpeed) {
+        this.maxSpeed = maxSpeed;
     }
 
     public void setValue(double value) {
@@ -108,11 +113,19 @@ public class SimpleForce extends Force {
         return hp;
     }
 
-    public double getSpeed() {
-        return speed;
+    public double getMaxSpeed() {
+        return maxSpeed;
     }
 
     public double getValue() {
         return value;
     }
+
+	public AIFloat3 getVelocity() {
+		return velocity;
+	}
+
+	public void setVelocity(AIFloat3 velocity) {
+		this.velocity = velocity;
+	}
 }

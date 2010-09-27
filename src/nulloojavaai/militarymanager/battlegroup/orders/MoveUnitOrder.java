@@ -5,7 +5,7 @@ import com.springrts.ai.oo.Unit;
 
 public class MoveUnitOrder extends UnitOrder {
 	public MoveUnitOrder(Unit actor, AIFloat3 destination) {
-		super(actor, UnitOrder.OrderType.MOVE);
+		super(actor);
 		this.destination = destination;
 	}
 

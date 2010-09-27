@@ -16,6 +16,7 @@ import nulloojavaai.militarymanager.battlegroup.BattleGroup;
 public abstract class Force {
     private BattleGroup originalBattleGroup;
     private AIFloat3 originalPosition;
+    int frameCreated;
 
     public void setOriginalBattleGroup(BattleGroup originalBattleGroup) {
         this.originalBattleGroup = originalBattleGroup;
@@ -33,13 +34,23 @@ public abstract class Force {
         return originalPosition;
     }
 
-    public Force(BattleGroup originalBattleGroup) {
-        this.originalBattleGroup = originalBattleGroup;        
+    public Force(BattleGroup originalBattleGroup, int frameCreated) {
+        this.originalBattleGroup = originalBattleGroup;    
+        this.frameCreated = frameCreated;
     }
 
-    public Force(AIFloat3 originalPosition) {
+    public Force(AIFloat3 originalPosition, int frameCreated) {
         this.originalPosition = originalPosition;
+        this.frameCreated = frameCreated;
     }
+
+	public int getFrameCreated() {
+		return frameCreated;
+	}
+
+	public void setFrameCreated(int frameCreated) {
+		this.frameCreated = frameCreated;
+	}
 
 
 }
