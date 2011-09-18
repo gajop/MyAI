@@ -8,7 +8,7 @@
 	ModHash=2361966273;
 	MapHash=311717275;
 	Mapname=Comet Catcher Redux;
-	GameType=Balanced Annihilation V7.19;
+	GameType=Balanced Annihilation V7.50;
 
 	startpostype=3;
 	[mapoptions]
@@ -56,7 +56,7 @@
 	}
 	[AI0]
 	{
-		Name=Bot1;
+		Name=MyAI;
 		ShortName=MyAI;
 		Version=0.1;
 		Team=0;
@@ -68,9 +68,9 @@
 	}
 	[AI1]
 	{
-		Name=Bot2;
+		Name=E323AI;
 		ShortName=E323AI;
-		Version=3.22.3;
+		Version=3.25.0;
 		Team=1;
 		IsFromDemo=0;
 		Host=2;
