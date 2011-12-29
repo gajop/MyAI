@@ -1,3 +1,4 @@
+package myai;
 /*
 Copyright (c) 2008 Robin Vobruba <hoijui.quaero@gmail.com>
 
@@ -14,11 +15,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
-
+/*
 package myai;
 
 
 import com.springrts.ai.oo.*;
+import com.springrts.ai.oo.clb.OOAICallback;
 
 /**
 * Serves as Interface for a Java Skirmish AIs for the Spring engine.
@@ -26,7 +28,8 @@ import com.springrts.ai.oo.*;
 * @author hoijui
 * @version 0.1
 */
-public class NullOOJavaAIFactory extends OOAIFactory {
+//TODO:
+public class NullOOJavaAIFactory/* extends OOAIFactory */{
 
     public NullOOJavaAIFactory() {
     }
@@ -35,8 +38,8 @@ public class NullOOJavaAIFactory extends OOAIFactory {
         return true;
     }
 
-    @Override
+ /*   @Override
     public OOAI createAI(int teamId, OOAICallback callback) {
         return new MyAI(teamId, callback);
-     }
+     }*/
 }

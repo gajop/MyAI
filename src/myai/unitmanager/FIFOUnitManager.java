@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 import myai.Module;
 import myai.utility.SpringCommunications;
 
-import com.springrts.ai.oo.Unit;
+import com.springrts.ai.oo.clb.Unit;
 
 public class FIFOUnitManager implements UnitManager {
 	List<UnitManagerListener> listeners = new LinkedList<UnitManagerListener>();

@@ -1,6 +1,6 @@
 package myai.unitmanager;
 
-import com.springrts.ai.oo.Unit;
+import com.springrts.ai.oo.clb.Unit;
 
 public interface UnitManagerListener {
     void unitOwnershipGained(Unit unit);

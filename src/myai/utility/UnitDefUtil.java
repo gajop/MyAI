@@ -1,7 +1,6 @@
 package myai.utility;
 
-import com.springrts.ai.oo.Unit;
-import com.springrts.ai.oo.UnitDef;
+import com.springrts.ai.oo.clb.UnitDef;
 
 public class UnitDefUtil {
     public static boolean isBuilder(UnitDef unitDef) {

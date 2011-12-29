@@ -5,11 +5,13 @@
 
 package myai.utility;
 
-import com.springrts.ai.AICommand;
-import com.springrts.ai.AIFloat3;
-import com.springrts.ai.command.CreateLineFigureDrawerAICommand;
-import com.springrts.ai.command.SendTextMessageAICommand;
-import com.springrts.ai.oo.OOAICallback;
+//import com.springrts.ai.oo.clb.AICommand;
+import com.springrts.ai.oo.AIFloat3;
+//import com.springrts.ai.oo.clb.CreateLineFigureDrawerAICommand;
+//import com.springrts.ai.command.SendTextMessageAICommand;
+import com.springrts.ai.oo.clb.OOAICallback;
+import com.springrts.ai.oo.clb.StubFigure;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -55,16 +57,8 @@ public class SpringCommunications {
         this.clb = clb;
     }
 
-    public int handleEngineCommand(AICommand command) {
-        return clb.getEngine().handleCommand(
-                com.springrts.ai.AICommandWrapper.COMMAND_TO_ID_ENGINE,
-                -1, command);
-    }
-
-    public int sendTextMsg(String msg) {
-        SendTextMessageAICommand msgCmd = new SendTextMessageAICommand(msg,
-                DEFAULT_ZONE);
-        return handleEngineCommand(msgCmd);
+    public void sendTextMsg(String msg) {
+    	clb.getGame().sendTextMessage(msg, DEFAULT_ZONE);
     }
 
     private Logger createLogger(String topic) {
@@ -72,9 +66,9 @@ public class SpringCommunications {
             if (logger.getTopic().equals(topic)) {
                 return logger.getLog();
             }
-        }
+        }        
         String path = clb.getDataDirs().allocatePath("log-team-" +
-                clb.getTeamId() + "/" + topic + ".txt", true, true, false, false);
+                clb.getGame().getMyTeam() + "/" + topic + ".txt", true, true, false, false);
         SpringLogger newLogger = new SpringLogger(topic, path);
         loggers.add(newLogger);
         return newLogger.getLog();
@@ -88,9 +82,8 @@ public class SpringCommunications {
     }
 
     public void drawLine(AIFloat3 begin, AIFloat3 end) {
-        AICommand drawCommand = new CreateLineFigureDrawerAICommand(begin,
-                            end, 10, false, 42, 0, 42);
-        handleEngineCommand(drawCommand);
+    	StubFigure fig = new StubFigure();
+    	fig.drawLine(begin, end, 10, false, 100, 42);
     }
 	public void update(int frame) { 
 		if (errorReported && frame == 1000) { //retransmits the error report a bit later in the game, since early error reports might be missed

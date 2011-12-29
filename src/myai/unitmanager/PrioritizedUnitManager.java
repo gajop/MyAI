@@ -1,6 +1,6 @@
 package myai.unitmanager;
 
-import com.springrts.ai.oo.Unit;
+import com.springrts.ai.oo.clb.Unit;
 
 import myai.Module;
 import myai.utility.SpringCommunications;

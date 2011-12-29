@@ -6,9 +6,9 @@
 	MyPlayerName=gajop;
 
 	ModHash=2361966273;
-	MapHash=311717275;
+	MapHash=3774393647;
 	Mapname=Comet Catcher Redux;
-	GameType=Balanced Annihilation V7.50;
+	GameType=Balanced Annihilation V7.19;
 
 	startpostype=3;
 	[mapoptions]
@@ -29,9 +29,9 @@
 		mo_nowrecks=0;
 		mo_preventdraw=0;
 		mo_progmines=0;
-		maxspeed=100;
+		maxspeed=50;
 		maxunits=500;
-		minspeed=20;
+		minspeed=20
 		startenergy=1000;
 		startmetal=1000;
 		deathmode=com;
@@ -43,37 +43,51 @@
 	}
 
 	NumPlayers=1;
-	NumUsers=3;
+	NumUsers=4;
 
-	[PLAYER2]
+	[PLAYER3]
 	{
 		Name=gajop;
 		CountryCode=;
 		Spectator=1;
 		Rank=0;
 		IsFromDemo=0;
-		Team=0;
+		Team=2;
 	}
 	[AI0]
 	{
-		Name=MyAI;
+		Name=Bot1;
 		ShortName=MyAI;
 		Version=0.1;
 		Team=0;
 		IsFromDemo=0;
-		Host=2;
+		Host=3;
 		[Options]
 		{
 		}
 	}
 	[AI1]
 	{
-		Name=E323AI;
+		Name=Bot2;
 		ShortName=E323AI;
 		Version=3.25.0;
 		Team=1;
 		IsFromDemo=0;
-		Host=2;
+		Host=3;
+		[Options]
+		{
+			difficulty=3;
+			logging=0;
+		}
+	}
+	[AI2]
+	{
+		Name=Bot3;
+		ShortName=E323AI;
+		Version=3.25.0;
+		Team=2;
+		IsFromDemo=0;
+		Host=3;
 		[Options]
 		{
 			difficulty=3;
@@ -83,30 +97,40 @@
 
 	[TEAM0]
 	{
-		TeamLeader=2;
-		StartPosX=5095;
-		StartPosZ=442;
-		AllyTeam=1;
+		TeamLeader=3;
+		StartPosX=999;
+		StartPosZ=7717;
+		AllyTeam=0;
 		RGBColor=0.976471 1 0;
 		Side=ARM;
 		Handicap=0;
 	}
 	[TEAM1]
 	{
-		TeamLeader=2;
-		StartPosX=999;
-		StartPosZ=7717;
-		AllyTeam=0;
+		TeamLeader=3;
+		StartPosX=5095;
+		StartPosZ=442;
+		AllyTeam=1;
 		RGBColor=0.509804 0.498039 1;
 		Side=ARM;
 		Handicap=0;
 	}
+	[TEAM2]
+	{
+		TeamLeader=3;
+		StartPosX=557;
+		StartPosZ=737;
+		AllyTeam=1;
+		RGBColor=0 0.498039 0.258824;
+		Side=ARM;
+		Handicap=0;
+	}
 
-	[ALLYTEAM1]
+	[ALLYTEAM0]
 	{
 		NumAllies=0;
 	}
-	[ALLYTEAM0]
+	[ALLYTEAM1]
 	{
 		NumAllies=0;
 	}

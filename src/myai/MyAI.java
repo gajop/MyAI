@@ -16,21 +16,20 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package myai;
 
-import com.springrts.ai.AICommand;
-import com.springrts.ai.AIFloat3;
+//import com.springrts.ai.AICommand;
 import com.springrts.ai.oo.*;
+import com.springrts.ai.oo.clb.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import myai.buildmanager.BuildManager;
-import myai.economymanager.EconomyManager;
-import myai.militarymanager.MilitaryManager;
+import myai.build.BuildManager;
+import myai.economy.EconomyManager;
+import myai.military.MilitaryManager;
 import myai.unitmanager.PrioritizedUnitManager;
 import myai.unitmanager.UnitManager;
 import myai.unitmanager.UnitManagerListener;
@@ -42,14 +41,19 @@ import myai.utility.SpringCommunications;
  * @author hoijui
  * @version 0.1
  */
-public class MyAI extends AbstractOOAI implements OOAI {
+public class MyAI extends OOAI implements IOOAI {
 
     private List<Module> modules = new LinkedList<Module>();
     SpringCommunications spring;
     Logger log;
     UnitManager unitManager;
+    static int timeout = 10000;
+    static short opts = 0;
+    
+    public MyAI() {}
 
-    MyAI(int teamId, OOAICallback callback) {
+    @Override
+    public int init(int teamId, OOAICallback callback) {
         this.spring = new SpringCommunications(callback);
         this.log = spring.getLogger("general");
         MilitaryManager militaryManager = new MilitaryManager(spring);
@@ -63,11 +67,10 @@ public class MyAI extends AbstractOOAI implements OOAI {
         buildManager.setUnitManager(unitManager);
         militaryManager.setUnitManager(unitManager);
         economyManager.setUnitManager(unitManager);
-        modules.addAll(Arrays.asList(militaryManager, buildManager, economyManager));   
-    }
-
-    @Override
-    public int init(int teamId, OOAICallback callback) {
+        modules.add(militaryManager);
+        modules.add(buildManager);
+        modules.add(economyManager);    	
+    	
         this.spring.setClb(callback);        
         try {        	       
         	spring.getClb().getCheats().setEnabled(true);
@@ -217,7 +220,7 @@ public class MyAI extends AbstractOOAI implements OOAI {
     public int unitCaptured(Unit unit, int oldTeamId, int newTeamId) {
         log.info("unitCaptured: " + unit.getDef().getName());        
         try {
-        	int myTeamId = this.spring.getClb().getTeamId(); 
+        	int myTeamId = this.spring.getClb().getGame().getMyTeam(); 
             if (myTeamId == newTeamId) {
             	this.unitManager.registerUnit(unit);
             } else if (myTeamId == oldTeamId) {
@@ -320,7 +323,7 @@ public class MyAI extends AbstractOOAI implements OOAI {
         }	    
         return 0; // signaling: OK
     }
-
+/*
     @Override
     public int playerCommand(List<Unit> units, AICommand command, int playerId) {        
     	for (Module module : modules) {
@@ -332,6 +335,7 @@ public class MyAI extends AbstractOOAI implements OOAI {
         }	    
         return 0; // signaling: OK
     }
+    */
 
     @Override
     public int commandFinished(Unit unit, int commandId, int commandTopicId) {        
@@ -363,4 +367,12 @@ public class MyAI extends AbstractOOAI implements OOAI {
     	e.printStackTrace(new PrintWriter(sw));
     	return sw.toString();
     }
+
+	public static int getTimeout() {
+		return timeout;
+	}
+
+	public static short getOpts() {
+		return opts;
+	}
 }

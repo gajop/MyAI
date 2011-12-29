@@ -1,5 +1,5 @@
 #!/bin/bash
-pushd ~/NetBeansProjects/MyAI/scripts
+pushd ~/radni_direktorijum/programi/MyAI/scripts
 ./deploy.sh
 ./run.sh self.txt &
 #./run.sh kaik.txt &

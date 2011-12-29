@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<project default="main">
+    <target name="main" depends="export, copy_libs" description="Main target">
+        <echo>
+            Exporting the .jar file.
+        </echo>
+    </target>
+  
+    <target name="compile" description="Compilation target">
+        <javac srcdir="src/myai"/>
+    </target>
+	
+	<target name="copy_libs" description="Copy required libs">
+		<copy todir="/usr/share/spring/AI/Skirmish/MyAI/0.1/jlib">
+			<fileset dir="lib"/>
+		</copy>
+	</target>
+  
+    <target name="export" description="exports the jar to spring AI folder">
+        <jar destfile="/usr/share/spring/AI/Skirmish/MyAI/0.1/SkirmishAI.jar">
+            <fileset dir="bin/" includes="**/*.class"/>
+        </jar>
+  </target>
+</project>
