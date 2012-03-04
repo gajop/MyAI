@@ -6,9 +6,9 @@
 	MyPlayerName=gajop;
 
 	ModHash=2361966273;
-	MapHash=3774393647;
+	MapHash=311717275;
 	Mapname=Comet Catcher Redux;
-	GameType=Balanced Annihilation V7.19;
+	GameType=Balanced Annihilation V7.50;
 
 	startpostype=3;
 	[mapoptions]

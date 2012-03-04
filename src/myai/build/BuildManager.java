@@ -6,6 +6,7 @@
 package myai.build;
 
 //import com.springrts.ai.AICommand;
+import com.springrts.ai.oo.Enumerations;
 import com.springrts.ai.oo.AIFloat3;
 //import com.springrts.ai.command.*;
 import com.springrts.ai.oo.clb.OOAICallback;
@@ -301,8 +302,7 @@ public class BuildManager extends Module implements UnitManagerListener {
     public int commandFinished(Unit unit, int commandId, int commandTopicId) {
     	System.out.println("Command finished " + commandTopicId);
         if (unit.getDef().getName().equals("armcv")) {
-        	//TODO 35 == build unit command
-        	if (35 == commandTopicId) {
+        	if (Enumerations.CommandTopic.COMMAND_UNIT_BUILD.getValue() == commandTopicId) {
                 unitManager.releaseUnit(unit, this);
         	}
         }
