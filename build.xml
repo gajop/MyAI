@@ -11,13 +11,13 @@
     </target>
 	
 	<target name="copy_libs" description="Copy required libs">
-		<copy todir="/usr/share/spring/AI/Skirmish/MyAI/0.1/jlib">
+		<copy todir="/home/gajop/.spring/AI/Skirmish/MyAI/0.1/jlib">
 			<fileset dir="lib"/>
 		</copy>
 	</target>
   
     <target name="export" description="exports the jar to spring AI folder">
-        <jar destfile="/usr/share/spring/AI/Skirmish/MyAI/0.1/SkirmishAI.jar">
+        <jar destfile="/home/gajop/.spring/AI/Skirmish/MyAI/0.1/SkirmishAI.jar">
             <fileset dir="bin/" includes="**/*.class"/>
         </jar>
   </target>

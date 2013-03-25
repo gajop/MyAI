@@ -6,7 +6,7 @@
 package myai.build;
 
 //import com.springrts.ai.AICommand;
-import com.springrts.ai.oo.Enumerations;
+import com.springrts.ai.Enumerations;
 import com.springrts.ai.oo.AIFloat3;
 //import com.springrts.ai.command.*;
 import com.springrts.ai.oo.clb.OOAICallback;

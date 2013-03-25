@@ -4,9 +4,9 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/spring"/>
 	<classpathentry kind="lib" path="lib/vecmath.jar"/>
-	<classpathentry kind="lib" path="lib/AIInterface.jar"/>
+	<classpathentry kind="lib" path="lib/JavaOO-AIWrapper.jar" sourcepath="lib/JavaOO-AIWrapper-src.jar"/>
+	<classpathentry kind="lib" path="lib/vecmath-src.jar"/>
+	<classpathentry kind="lib" path="lib/AIInterface.jar" sourcepath="lib/AIInterface-src.jar"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry kind="lib" path="lib/AIWrapper-src.jar"/>
-	<classpathentry kind="lib" path="lib/AIWrapper.jar" sourcepath="lib/AIWrapper-src.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
