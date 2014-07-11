@@ -35,8 +35,8 @@ public class BuildManager extends Module implements UnitManagerListener {
     private LinkedList<UnitDef>  initialBuildOrder = new LinkedList<UnitDef>();
     private LinkedList<UnitDef>  repeatingBuildOrder = new LinkedList<UnitDef>();
     int repeatingBOPos = 0;
-    private UnitDef solarPlant = null, mex = null, vehPlantType = null, 
-            flash = null, vehcon = null, nano = null, jeffy = null;
+    public static UnitDef solarPlant = null, mex = null, vehPlantType = null, 
+            flash = null, vehcon = null, nano = null, jeffy = null, armcom = null;
     boolean busy = false;
     private LinkedList<AIFloat3> takenResources = new LinkedList<AIFloat3>();
     private Unit vehPlant = null;
@@ -45,6 +45,8 @@ public class BuildManager extends Module implements UnitManagerListener {
     Logger log;
     UnitManager unitManager;
     int failed = Integer.MIN_VALUE;
+    
+    
 
     public void setUnitManager(UnitManager unitManager) {
         this.unitManager = unitManager;
@@ -59,38 +61,68 @@ public class BuildManager extends Module implements UnitManagerListener {
     public int init(int teamId, OOAICallback callback) {
          initialize();
          buildScheduler = new BuildScheduler(spring);
-         for (UnitDef unitDef : spring.getClb().getUnitDefs()) {
-            if (unitDef.getName().equals("armsolar")) {
-                solarPlant = unitDef;
-            } else if (unitDef.getName().equals("armmex")) {
-                mex = unitDef;
-            } else if (unitDef.getName().equals("armvp")) {
-                vehPlantType = unitDef;
-            } else if (unitDef.getName().equals("armflash")) {
-                flash = unitDef;                
-            } else if (unitDef.getName().equals("armcv")) {
-                vehcon = unitDef;
-            } else if (unitDef.getName().equals("armnanotc")) {
-                nano = unitDef;
-            } else if (unitDef.getName().equals("armfav")) {
-            	jeffy = unitDef;
-            }
+         if (spring.getClb().getMod().getShortName().equals("ZK")) {
+	         for (UnitDef unitDef : spring.getClb().getUnitDefs()) {
+	            if (unitDef.getName().equals("armsolar")) {
+	                solarPlant = unitDef;
+	            } else if (unitDef.getName().equals("cormex")) {
+	                mex = unitDef;
+	            } else if (unitDef.getName().equals("factoryveh")) {
+	                vehPlantType = unitDef;
+	            } else if (unitDef.getName().equals("corgator")) {
+	                flash = unitDef;                
+	            } else if (unitDef.getName().equals("corned")) {
+	                vehcon = unitDef;
+	            } else if (unitDef.getName().equals("armnanotc")) {
+	                nano = unitDef;
+	            } else if (unitDef.getName().equals("corfav")) {
+	            	jeffy = unitDef;
+	            } else if (unitDef.getName().equals("armcom1")) {
+	            	armcom = unitDef;
+	            }
+	        }
+	        initialBuildOrder.addAll(Arrays.asList(vehPlantType, mex, mex, mex, solarPlant,
+	                solarPlant, solarPlant));
+	        repeatingBuildOrder.addAll(Arrays.asList(vehcon, jeffy, jeffy, 
+	        		flash, flash, flash, flash, flash));
+        } else {
+	         for (UnitDef unitDef : spring.getClb().getUnitDefs()) {
+		            if (unitDef.getName().equals("armsolar")) {
+		                solarPlant = unitDef;
+		            } else if (unitDef.getName().equals("armmex")) {
+		                mex = unitDef;
+		            } else if (unitDef.getName().equals("armvp")) {
+		                vehPlantType = unitDef;
+		            } else if (unitDef.getName().equals("armflash")) {
+		                flash = unitDef;                
+		            } else if (unitDef.getName().equals("armcv")) {
+		                vehcon = unitDef;
+		            } else if (unitDef.getName().equals("armnanotc")) {
+		                nano = unitDef;
+		            } else if (unitDef.getName().equals("armfav")) {
+		            	jeffy = unitDef;
+		            } else if (unitDef.getName().equals("armcom")) {
+		            	armcom = unitDef;
+		            }
+		        }
+		        initialBuildOrder.addAll(Arrays.asList(mex, mex, mex, solarPlant,
+		                solarPlant, vehPlantType, solarPlant));
+		        repeatingBuildOrder.addAll(Arrays.asList(vehcon, jeffy, jeffy, 
+		        		flash, flash, flash, flash, flash));        	
         }
-        initialBuildOrder.addAll(Arrays.asList(mex, mex, mex, solarPlant,
-                solarPlant, vehPlantType, solarPlant));
-        repeatingBuildOrder.addAll(Arrays.asList(vehcon, jeffy, jeffy, 
-        		flash, flash, flash, flash, flash));
         return 0;
     }
 
-    private List<AIFloat3> metalSpots;
+    public static List<AIFloat3> metalSpots;
 
     private void initialize() {
         for (Resource resource : spring.getClb().getResources()) {
-            if (resource.getName().equals("Metal")) {
-                metalSpots = spring.getClb().
-                        getMap().getResourceMapSpotsPositions(resource);
-            }
+        	if (metalSpots  == null) {
+	            if (resource.getName().equals("Metal")) {
+	                metalSpots = spring.getClb().
+	                        getMap().getResourceMapSpotsPositions(resource);
+	            }
+        	}
         }
     }
 
@@ -161,7 +193,8 @@ public class BuildManager extends Module implements UnitManagerListener {
                         initialBuildOrder.removeFirst();
                     }
                 }
-            } else {
+            } 
+            {
                 List<AIFloat3> resourcePositions = null;
                 double eCurrent = 0;
                 double eMax = 0;
@@ -178,14 +211,15 @@ public class BuildManager extends Module implements UnitManagerListener {
                     } else if (resource.getName().equals("Energy")) {
                         eCurrent = spring.getClb().getEconomy().
                                 getCurrent(resource);
-                        eMax = spring.getClb().getEconomy().
-                                getStorage(resource);
+                        if (spring.getClb().getMod().getShortName().equals("ZK")) {
+                        	eMax = 500;//spring.getClb().getEconomy().getStorage(resource);
+                        }
                     }
                     
                 }
                 if (failed + 500 < frame) {
 		            for (Unit builder : buildScheduler.getIdleBuilders()) {
-		                if (!builder.getDef().equals(this.vehcon)) {
+		                if (!builder.getDef().equals(vehcon)) {
 		                    continue;
 		                } else if (VectorUtil.distance(builder.getPos(), vehPlant.getPos()) < 60) {
 		                    continue;
@@ -251,7 +285,7 @@ public class BuildManager extends Module implements UnitManagerListener {
                 }
                 UnitDef currentUnitDef = repeatingBuildOrder.get(repeatingBOPos);
                 if (vehPlant != null && buildScheduler.
-                    canBuild(currentUnitDef, this.vehPlant)) {
+                    canBuild(currentUnitDef, vehPlant)) {
                     buildScheduler.build(this.vehPlant, currentUnitDef);
                     repeatingBOPos++;
                     if (repeatingBOPos >= repeatingBuildOrder.size()) {
@@ -266,10 +300,10 @@ public class BuildManager extends Module implements UnitManagerListener {
     @Override
     public int unitFinished(Unit unit) {    	
     	buildScheduler.unitFinished(unit);
-        if (unit.getDef().getName().equals("armcom")) {
+        if (unit.getDef().equals(armcom)) {
             this.commander = unit;
-        } else if (unit.getDef().equals(this.vehPlantType)) {
-            this.vehPlant = unit;            
+        } else if (unit.getDef().equals(vehPlantType)) {
+            this.vehPlant = unit;
         } else if (UnitDefUtil.isNano(unit.getDef())) {
             boolean ownershipGranted = unitManager.requestUnit(unit, this);
             if (ownershipGranted) {
@@ -301,7 +335,7 @@ public class BuildManager extends Module implements UnitManagerListener {
     @Override
     public int commandFinished(Unit unit, int commandId, int commandTopicId) {
     	System.out.println("Command finished " + commandTopicId);
-        if (unit.getDef().getName().equals("armcv")) {
+        if (unit.getDef().equals(vehcon)) {
         	if (Enumerations.CommandTopic.COMMAND_UNIT_BUILD.getValue() == commandTopicId) {
                 unitManager.releaseUnit(unit, this);
         	}

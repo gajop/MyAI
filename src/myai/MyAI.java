@@ -17,14 +17,18 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package myai;
 
 //import com.springrts.ai.AICommand;
+import com.json.parsers.JSONParser;
+import com.json.parsers.JsonParserFactory;
 import com.springrts.ai.oo.*;
 import com.springrts.ai.oo.clb.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Logger;
 
 import myai.build.BuildManager;
@@ -49,6 +53,8 @@ public class MyAI extends OOAI implements IOOAI {
     UnitManager unitManager;
     static int timeout = 10000;
     static short opts = 0;
+    
+    static double testStaticness = -1;
     
     public MyAI() {}
 
@@ -85,11 +91,19 @@ public class MyAI extends OOAI implements IOOAI {
             	spring.logError(getStackTrace(e));
             }
         }
+        {
+        	Random rand = new Random();
+        	testStaticness = rand.nextDouble();
+        	log.info("Initializing AI of team: " + teamId + " with random (static): " + testStaticness);
+        }                 
         return 0;
     }
 
     @Override
     public int update(int frame) {
+    	if (frame == 1) { 
+    		log.info("Frame 1 static random value (should be different): " + testStaticness);
+    	}
     	spring.update(frame);
         for (Module module : modules) {
         	try {
@@ -362,6 +376,32 @@ public class MyAI extends OOAI implements IOOAI {
         return 0; // signaling: OK
     }
     
+    
+    @Override
+    public int luaMessage(String inData) {
+    	log.info("lua message:" + inData);
+    	
+    	if(inData.startsWith("METAL_SPOTS:")){
+    		String json = inData.substring(12);
+			JsonParserFactory factory=JsonParserFactory.getInstance();
+			JSONParser parser=factory.newJsonParser();
+			ArrayList<HashMap> jsonData=(ArrayList)parser.parseJson(json).values().toArray()[0];
+			
+			ArrayList<AIFloat3> metalSpots = new ArrayList<AIFloat3>(); 
+			for (HashMap s:jsonData){
+				float x = Float.parseFloat((String)s.get("x"));
+				float y = Float.parseFloat((String)s.get("y"));
+				float z = Float.parseFloat((String)s.get("z"));
+				//float m = Float.parseFloat((String)s.get("metal"));
+
+				AIFloat3 metalSpot = new AIFloat3(x,y,z);
+				metalSpots.add(metalSpot);
+			}
+			BuildManager.metalSpots = metalSpots;
+    	}
+    	
+    	return super.luaMessage(inData);
+    }
     String getStackTrace(Throwable e) {
     	StringWriter sw = new StringWriter();
     	e.printStackTrace(new PrintWriter(sw));

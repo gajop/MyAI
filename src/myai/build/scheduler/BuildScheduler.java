@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import myai.MyAI;
+import myai.build.BuildManager;
 import myai.utility.SpringCommunications;
 import myai.utility.UnitDefUtil;
 
@@ -59,7 +60,7 @@ public class BuildScheduler {
     }
 
     public boolean canBuild(UnitDef unitDef, Unit builder) {
-    	if (builder.getDef().getName().equals("vehplant")) {
+    	if (builder.getDef().equals(BuildManager.vehPlantType)) {
     		System.out.println(idleBuilders.size());
     	}
         return idleBuilders.contains(builder) &&

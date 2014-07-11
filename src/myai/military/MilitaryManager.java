@@ -9,6 +9,7 @@ import com.springrts.ai.oo.clb.Unit;
 import com.springrts.ai.oo.clb.UnitDef;
 
 import myai.Module;
+import myai.build.BuildManager;
 import myai.military.battlegroup.BattleGroup;
 import myai.military.battlegroup.BattleGroupPlanner;
 import myai.military.battlegroup.BattleGroupScheduler;
@@ -59,8 +60,8 @@ public class MilitaryManager extends Module implements UnitManagerListener {
     @Override
     public int unitFinished(Unit unit) {
     	UnitDef unitDef = unit.getDef();
-    	boolean isFlash = unitDef.getName().equals("armflash");
-    	boolean isJeffy = unitDef.getName().equals("armfav");
+    	boolean isFlash = unitDef.equals(BuildManager.flash);
+    	boolean isJeffy = unitDef.equals(BuildManager.jeffy);
         if (isFlash || isJeffy) {
             BattleGroup selected = null;
             for (BattleGroup battleGroup : battleGroups.getBattleGroups()) {            	

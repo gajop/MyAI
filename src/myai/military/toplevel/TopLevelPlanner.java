@@ -9,6 +9,7 @@ import java.util.Set;
 import com.springrts.ai.oo.AIFloat3;
 import com.springrts.ai.oo.clb.Unit;
 
+import myai.build.BuildManager;
 import myai.military.MilitaryManager;
 import myai.military.battlegroup.BattleGroup;
 import myai.military.battlegroup.BattleGroupListener;
@@ -97,7 +98,7 @@ public class TopLevelPlanner implements BattleGroupListener {
                 	if (unit == null || unit.getDef() == null) {
                 		continue;
                 	}
-                	if (unit.getDef().getName().equals("armflash")) {
+                	if (unit.getDef().equals(BuildManager.flash)) {
                 		isFlash = true;
                 	}
                 	break;

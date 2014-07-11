@@ -7,6 +7,7 @@
 	<classpathentry kind="lib" path="lib/JavaOO-AIWrapper.jar" sourcepath="lib/JavaOO-AIWrapper-src.jar"/>
 	<classpathentry kind="lib" path="lib/vecmath-src.jar"/>
 	<classpathentry kind="lib" path="lib/AIInterface.jar" sourcepath="lib/AIInterface-src.jar"/>
+	<classpathentry kind="lib" path="lib/quick-json-1.0.2.3.jar"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
